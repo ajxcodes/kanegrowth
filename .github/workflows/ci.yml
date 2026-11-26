@@ -173,18 +173,15 @@ jobs:
           retention-days: 7
 
   container-build:
-    name: Container Build (Web + Backend)
+    name: Container Build (Single Image)
     runs-on: ubuntu-latest
     needs: [frontend, rust]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build Web Container image
-        run: docker build -t kanegrowth-web:ci .
-
-      - name: Build Backend Container image
-        run: docker build -t kanegrowth-api:ci -f crates/kanegrowth-api/Dockerfile .
+      - name: Build Single Container image
+        run: docker build -t kanegrowth:ci .
 
   auto-tag:
     name: SemVer Auto-Tag & Release
