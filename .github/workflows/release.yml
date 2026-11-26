@@ -35,7 +35,7 @@ jobs:
         run: |
           mkdir -p release-artifacts
           tar -czf "release-artifacts/kanegrowth-web-${RELEASE_TAG}.tar.gz" -C dist/frontend .
-          (cd release-artifacts && sha256sum * > SHA256SUMS.txt)
+          (cd release-artifacts && sha256sum -- * > SHA256SUMS.txt)
           cat <<EOF > release-artifacts/latest.json
           {
             "version": "${RELEASE_TAG#v}",
