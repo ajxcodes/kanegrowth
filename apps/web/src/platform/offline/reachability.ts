@@ -8,7 +8,13 @@ import { BASE_URL } from '@lib/apiPaths'
 // allowlist (SEC-10) already grants this origin explicit access, same as every other API call.
 // `/health` (mounted outside `/api/v1`) is unauthenticated, doesn't touch Mongo, and is exempt from
 // the API rate limiter, making it a safe, side-effect-free reachability check.
-const HEALTH_URL = `${new URL(BASE_URL).origin}/health`
+// BASE_URL may be relative (e.g. `/api/v1` in the single-container deployment), so resolve it
+// against the page origin. Fall back to the historical localhost base for non-browser contexts.
+const BASE_ORIGIN =
+    typeof window !== 'undefined' && window.location
+        ? window.location.origin
+        : 'http://localhost:5000'
+const HEALTH_URL = `${new URL(BASE_URL, BASE_ORIGIN).origin}/health`
 
 /**
  * `navigator.onLine` only reflects whether the OS thinks a network interface is up - it's
