@@ -7,7 +7,16 @@ use rusqlite::params;
 use serde_json::{json, Value};
 use std::sync::MutexGuard;
 
-fn json_to_sql(v: Value) -> Box<dyn rusqlite::ToSql> {
+fn json_to_sql(col: &str, v: Value) -> Box<dyn rusqlite::ToSql> {
+    // Financial promoted columns are stored in integer minor units. Fractional
+    // values arriving from clients (e.g. dollars) are scaled to minor units.
+    const FINANCIAL_COLUMNS: &[&str] = &[
+        "amount",
+        "currentBalance",
+        "monthlyTargetMinor",
+        "minimumPaymentMinor",
+    ];
+    let scale = FINANCIAL_COLUMNS.contains(&col);
     match v {
         Value::Null => Box::new(Option::<String>::None) as Box<dyn rusqlite::ToSql>,
         Value::Bool(b) => Box::new(if b { 1i64 } else { 0i64 }),
@@ -15,10 +24,13 @@ fn json_to_sql(v: Value) -> Box<dyn rusqlite::ToSql> {
             if let Some(i) = n.as_i64() {
                 Box::new(i)
             } else if let Some(f) = n.as_f64() {
-                if f.fract() != 0.0 {
+                if scale && f.fract() != 0.0 {
                     Box::new((f * 100.0).round() as i64)
-                } else {
+                } else if f.fract() == 0.0 {
                     Box::new(f as i64)
+                } else {
+                    // Non-financial fractional value: keep as real.
+                    Box::new(f)
                 }
             } else {
                 Box::new(n.to_string())
@@ -335,7 +347,7 @@ fn upsert_record(
     let mut params_vec: Vec<Box<dyn rusqlite::ToSql>> = Vec::new();
     for c in &col_names {
         let v = values.get(c).cloned().unwrap_or(Value::Null);
-        params_vec.push(json_to_sql(v));
+        params_vec.push(json_to_sql(c, v));
     }
     let params_refs: Vec<&dyn rusqlite::ToSql> = params_vec.iter().map(|b| b.as_ref()).collect();
     conn.execute(&sql, params_refs.as_slice())

@@ -196,6 +196,7 @@ export default defineConfig(({ mode }) => {
     environment: 'happy-dom',
     setupFiles: ['./src/test/setup.ts'],
     css: true,
+    exclude: ['**/node_modules/**', 'e2e/**', 'dist/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],

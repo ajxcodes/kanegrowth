@@ -112,7 +112,7 @@ jobs:
         run: cargo test --workspace
 
       - name: Cargo unit tests (server)
-        run: cargo test -p kanegrowth-api --lib
+        run: cargo test -p kanegrowth-api
 
       - name: Cargo integration tests (server)
         run: cargo test -p kanegrowth-api --tests
@@ -123,6 +123,7 @@ jobs:
   e2e:
     name: Playwright E2E (Desktop & Mobile)
     runs-on: ubuntu-latest
+    needs: [frontend, rust]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -144,14 +145,24 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Build Standalone Web Bundle
-        run: npm run build
+      - name: Start full compose stack
+        run: docker compose up -d --build
 
-      - name: Run Playwright E2E tests
-        run: npm run test:e2e
+      - name: Wait for composed frontend
+        run: |
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:8080/ >/dev/null && break
+            sleep 2
+          done
 
       - name: Run Web App Playwright E2E tests
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:8080
         run: npm --prefix apps/web run test:e2e
+
+      - name: Teardown compose stack
+        if: always()
+        run: docker compose down
 
       - name: Upload Playwright report on failure
         if: failure()
@@ -161,23 +172,24 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
-  docker:
-    name: Docker Web UI Build
+  container-build:
+    name: Container Build (Web + Backend)
     runs-on: ubuntu-latest
+    needs: [frontend, rust]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build Web Docker image
+      - name: Build Web Container image
         run: docker build -t kanegrowth-web:ci .
 
-      - name: Build Backend Docker image
+      - name: Build Backend Container image
         run: docker build -t kanegrowth-api:ci -f crates/kanegrowth-api/Dockerfile .
 
   auto-tag:
     name: SemVer Auto-Tag & Release
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [lint-workflows, frontend, rust, e2e, docker]
+    needs: [lint-workflows, frontend, rust, e2e, container-build]
     runs-on: ubuntu-latest
     permissions:
       contents: write
