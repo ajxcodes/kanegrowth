@@ -134,7 +134,7 @@ const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             const storedRefreshToken = await getStoredRefreshToken()
             const response = await axiosInstance.post<ApiResponse<AuthPayload>>(
                 API_PATHS.AUTH.REFRESH,
-                storedRefreshToken ? { refreshToken: storedRefreshToken } : undefined
+                storedRefreshToken ? { refreshToken: storedRefreshToken } : {}
             )
             const payload = parseAuthPayload(response)
             setAccessToken(payload.token)
