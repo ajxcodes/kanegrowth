@@ -99,15 +99,31 @@ jobs:
       - name: Cache Cargo artifacts
         uses: Swatinem/rust-cache@v2
 
+      - name: Cargo fmt (server)
+        run: cargo fmt --check -p kanegrowth-api
+
+      - name: Cargo clippy (server)
+        run: cargo clippy -p kanegrowth-api --all-targets -- -D warnings
+
       - name: Cargo check workspace
         run: cargo check --workspace
 
       - name: Cargo test workspace
         run: cargo test --workspace
 
+      - name: Cargo unit tests (server)
+        run: cargo test -p kanegrowth-api
+
+      - name: Cargo integration tests (server)
+        run: cargo test -p kanegrowth-api --tests
+
+      - name: Architecture boundary check
+        run: cargo test -p kanegrowth-api --test 'arch_*'
+
   e2e:
     name: Playwright E2E (Desktop & Mobile)
     runs-on: ubuntu-latest
+    needs: [frontend, rust]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -129,11 +145,24 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Build Standalone Web Bundle
-        run: npm run build
+      - name: Start full compose stack
+        run: docker compose up -d --build
 
-      - name: Run Playwright E2E tests
-        run: npm run test:e2e
+      - name: Wait for composed frontend
+        run: |
+          for _ in $(seq 1 60); do
+            curl -sf http://localhost:8080/ >/dev/null && break
+            sleep 2
+          done
+
+      - name: Run Web App Playwright E2E tests
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:8080
+        run: npm --prefix apps/web run test:e2e
+
+      - name: Teardown compose stack
+        if: always()
+        run: docker compose down
 
       - name: Upload Playwright report on failure
         if: failure()
@@ -143,20 +172,21 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
-  docker:
-    name: Docker Web UI Build
+  container-build:
+    name: Container Build (Single Image)
     runs-on: ubuntu-latest
+    needs: [frontend, rust]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build Docker image
-        run: docker build -t kanegrowth-web:ci .
+      - name: Build Single Container image
+        run: docker build -t kanegrowth:ci .
 
   auto-tag:
     name: SemVer Auto-Tag & Release
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [lint-workflows, frontend, rust, e2e, docker]
+    needs: [lint-workflows, frontend, rust, e2e, container-build]
     runs-on: ubuntu-latest
     permissions:
       contents: write

@@ -12,3 +12,12 @@ apps/web/src-tauri/target/
 *.sqlite3-wal
 *.sqlite3-shm
 .DS_Store
+
+# Antigravity Persistent Plans
+artifacts/plans/
+
+# CodeLoop Git Worktrees
+.worktrees
+
+# CodeLoop Git Worktrees
+.agyloop

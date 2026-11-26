@@ -1,8 +1,24 @@
 services:
-  kanegrowth-web:
+  kanegrowth:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "127.0.0.1:8080:8080"
+      - "8080:8080"
+    environment:
+      KANEGROWTH_BIND: "127.0.0.1:5000"
+      KANEGROWTH_DB_PATH: "/data/kanegrowth.db"
+      KANEGROWTH_JWT_SECRET: "change-me-in-production"
+      KANEGROWTH_CORS_ORIGINS: "http://localhost:8080"
+    volumes:
+      - kanegrowth-data:/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://127.0.0.1:8080/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+
+volumes:
+  kanegrowth-data:

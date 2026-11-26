@@ -3,5 +3,6 @@ resolver = "2"
 members = [
     "crates/analytics-domain",
     "crates/analytics-sqlite",
+    "crates/kanegrowth-api",
     "apps/web/src-tauri",
 ]
