@@ -99,6 +99,12 @@ jobs:
       - name: Cache Cargo artifacts
         uses: Swatinem/rust-cache@v2
 
+      - name: Cargo fmt (server)
+        run: cargo fmt --check -p kanegrowth-api
+
+      - name: Cargo clippy (server)
+        run: cargo clippy -p kanegrowth-api --all-targets -- -D warnings
+
       - name: Cargo check workspace
         run: cargo check --workspace
 
@@ -150,8 +156,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build Docker image
+      - name: Build Web Docker image
         run: docker build -t kanegrowth-web:ci .
+
+      - name: Build Backend Docker image
+        run: docker build -t kanegrowth-api:ci -f crates/kanegrowth-api/Dockerfile .
 
   auto-tag:
     name: SemVer Auto-Tag & Release

@@ -1,0 +1,15 @@
+# Build context exclusions for root Dockerfile (kanegrowth-web)
+.git
+.github
+.worktrees
+node_modules
+target
+crates/*/target
+apps/web/node_modules
+apps/web/dist
+apps/web/dist-desktop
+apps/web/src-tauri/target
+.env
+.env.*
+*.log
+artifacts

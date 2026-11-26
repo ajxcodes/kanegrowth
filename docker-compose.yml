@@ -6,3 +6,27 @@ services:
     ports:
       - "127.0.0.1:8080:8080"
     restart: unless-stopped
+
+  kanegrowth-api:
+    build:
+      context: .
+      dockerfile: crates/kanegrowth-api/Dockerfile
+    ports:
+      - "127.0.0.1:5000:5000"
+    environment:
+      KANEGROWTH_BIND: "0.0.0.0:5000"
+      KANEGROWTH_DB_PATH: "/data/kanegrowth.db"
+      KANEGROWTH_JWT_SECRET: "change-me-in-production"
+      KANEGROWTH_CORS_ORIGINS: "http://localhost:8080"
+    volumes:
+      - kanegrowth-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://127.0.0.1:5000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  kanegrowth-data:
