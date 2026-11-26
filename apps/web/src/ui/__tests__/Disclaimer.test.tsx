@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest'
 import { render, screen } from '@/test/test-utils'
 import Disclaimer from '../Disclaimer'
 
-// V2 (pre-v1.0.0): shared standing disclaimer for Corvale's predictive / advisory surfaces.
+// V2 (pre-v1.0.0): shared standing disclaimer for KaneGrowth's predictive / advisory surfaces.
 // role="note", tone variants, and deliberately NOT dismissible (always-on context, not a hint).
 
 describe('Disclaimer', () => {

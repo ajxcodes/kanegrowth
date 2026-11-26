@@ -21,12 +21,12 @@ import {
   parseLocalBackupPayload,
   previewLocalRestore,
   restoreLocalBackup,
-  type CorvaleBackupPayload,
+  type KaneGrowthBackupPayload,
 } from '../backup'
 
 /**
  * Sprint 13.10 acceptance criteria: a backup exported from the local SQLite store must match the
- * server's `CorvaleBackupPayload` shape (`backend/utils/backupUtils.ts`) and restoring it must
+ * server's `KaneGrowthBackupPayload` shape (`backend/utils/backupUtils.ts`) and restoring it must
  * preserve every FK invariant the server's `restoreUserBackup` guarantees - fresh ids, remapped
  * references, shared master categories reused rather than duplicated. This suite exercises a full
  * export -> restore round trip against two independent local databases (simulating "restore on a
@@ -304,7 +304,7 @@ describe('domain/backup: exportLocalBackup', () => {
     Object.defineProperty(navigator, 'onLine', { value: true, writable: true, configurable: true })
   })
 
-  it('exports every syncable table in the server CorvaleBackupPayload shape, counts matching array lengths', async () => {
+  it('exports every syncable table in the server KaneGrowthBackupPayload shape, counts matching array lengths', async () => {
     const db = await freshDb()
     const masterCategoryId = nextId()
     await seedFullSourceData(db, masterCategoryId)
@@ -370,7 +370,7 @@ describe('domain/backup: parseLocalBackupPayload', () => {
   })
 
   it('rejects a payload missing required arrays', () => {
-    expect(() => parseLocalBackupPayload({ version: 1, accounts: [] })).toThrow(/not a valid corvale backup/i)
+    expect(() => parseLocalBackupPayload({ version: 1, accounts: [] })).toThrow(/not a valid kanegrowth backup/i)
   })
 
   it('accepts a well-formed payload', async () => {
@@ -384,7 +384,7 @@ describe('domain/backup: previewLocalRestore', () => {
   it('warns when receipt metadata is present (server ZIP export restored locally)', async () => {
     const db = await freshDb()
     const payload = await exportLocalBackup(db, { workspaceId: null })
-    const withReceipts: CorvaleBackupPayload = { ...payload, receipts: [{ id: 'r1', originalFilename: 'x.png' }] }
+    const withReceipts: KaneGrowthBackupPayload = { ...payload, receipts: [{ id: 'r1', originalFilename: 'x.png' }] }
 
     const preview = previewLocalRestore(db, withReceipts, null)
     expect(preview.valid).toBe(true)
@@ -481,7 +481,7 @@ describe('domain/backup: restoreLocalBackup round trip', () => {
     await seedFullSourceData(sourceDb, masterCategoryId)
     const payload = await exportLocalBackup(sourceDb, { workspaceId: null })
 
-    const tampered: CorvaleBackupPayload = {
+    const tampered: KaneGrowthBackupPayload = {
       ...payload,
       transactions: payload.transactions.map((t) => ({ ...t, categoryId: 'not-a-real-id' })),
     }
@@ -499,7 +499,7 @@ describe('domain/backup: restoreLocalBackup round trip', () => {
   it('rejects restoring an unsupported backup version', async () => {
     const sourceDb = await freshDb()
     const payload = await exportLocalBackup(sourceDb, { workspaceId: null })
-    const badPayload = { ...payload, version: 2 } as unknown as CorvaleBackupPayload
+    const badPayload = { ...payload, version: 2 } as unknown as KaneGrowthBackupPayload
 
     const targetDb = await freshDb()
     await expect(restoreLocalBackup(targetDb, badPayload, { userId: 'u2', targetWorkspaceId: null })).rejects.toThrow()

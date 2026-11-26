@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Capability for the main Corvale window",
+  "description": "Capability for the main KaneGrowth window",
   "windows": ["main"],
   "permissions": [
     "core:default",

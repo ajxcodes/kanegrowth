@@ -26,9 +26,9 @@ describe('openExternalUrl', () => {
         const openSpy = vi.fn()
         vi.stubGlobal('open', openSpy)
 
-        await openExternalUrl('https://corvale.app/docs')
+        await openExternalUrl('https://kanegrowth.app/docs')
 
-        expect(openSpy).toHaveBeenCalledWith('https://corvale.app/docs', '_blank', 'noopener,noreferrer')
+        expect(openSpy).toHaveBeenCalledWith('https://kanegrowth.app/docs', '_blank', 'noopener,noreferrer')
         expect(openUrl).not.toHaveBeenCalled()
         vi.unstubAllGlobals()
     })
@@ -52,9 +52,9 @@ describe('openExternalUrl', () => {
         const openSpy = vi.fn()
         vi.stubGlobal('open', openSpy)
 
-        await openExternalUrl('https://corvale.app/docs')
+        await openExternalUrl('https://kanegrowth.app/docs')
 
-        expect(openUrl).toHaveBeenCalledWith('https://corvale.app/docs')
+        expect(openUrl).toHaveBeenCalledWith('https://kanegrowth.app/docs')
         expect(openSpy).not.toHaveBeenCalled()
         vi.unstubAllGlobals()
     })

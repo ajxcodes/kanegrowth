@@ -2,16 +2,16 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" href="/pwa-192.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Corvale — Stop guessing. Start knowing. Personal finance for students and young adults who are tired of balance shock." />
+    <meta name="description" content="KaneGrowth — Building wealth from good habits at home. Personal finance tracker for households and individuals." />
     <meta name="theme-color" content="#14121c" />
     <!--
-      Corvale is dark-only. Declaring the color scheme here - before any CSS loads - makes the
-      browser paint the initial canvas, form controls and native scrollbars dark on the very
-      first frame, killing the white flash on load. `:root { color-scheme: dark }` in index.css
-      backs this up for the parsed document. This is also the only lever that reaches OS-rendered
-      <select> popups (V8).
+      KaneGrowth defaults to dark theme and supports light theme. Declaring color-scheme here -
+      before any CSS loads - lets the browser paint the initial canvas, form controls and native
+      scrollbars without a flash on load. `:root` tokens in index.css back this up for the parsed
+      document. This is also the only lever that reaches OS-rendered <select> popups (V8).
     -->
     <meta name="color-scheme" content="dark light" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -27,7 +27,7 @@
       `window.open` is a no-op. blob: URLs only reference data the page itself created.
       `frame-ancestors` has no effect via a <meta> tag (CSP spec) - a real deployment must also
       send it (or X-Frame-Options) as an HTTP response header at the hosting/reverse-proxy layer.
-      The shipped frontend/corvale/nginx.conf does this (CSP `frame-ancestors 'none'` +
+      The shipped apps/web/nginx.conf does this (CSP `frame-ancestors 'none'` +
       X-Frame-Options: DENY, plus nosniff / Referrer-Policy / HSTS); a non-nginx host must
       replicate those headers - see docs/developers/guides/deployment.md "Security headers".
     -->
@@ -35,7 +35,7 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' %VITE_API_ORIGIN%; frame-src 'self' blob:; base-uri 'self'; form-action 'self'; object-src 'none'"
     />
-    <title>Corvale — Know where every dollar went</title>
+    <title>KaneGrowth — Building wealth from good habits at home</title>
   </head>
   <body>
     <div id="root"></div>

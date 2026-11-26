@@ -4,6 +4,9 @@ import App from './App'
 import '@/index.css'
 import { bootstrapLocalDb } from '@platform/db/bootstrapLocalDb'
 import { attachDesktopConsoleLogging } from '@platform/desktop/desktopLog'
+import { initTheme } from '@lib/theme'
+
+initTheme()
 
 const rootElement = document.getElementById('root')
 

@@ -2,7 +2,7 @@
 name = "kanegrowth"
 version = "0.1.0"
 description = "KaneGrowth desktop shell — local-first household finance and analytics"
-authors = ["KaneGrowth Contributors", "Corvale"]
+authors = ["KaneGrowth Contributors"]
 edition = "2021"
 rust-version = "1.77"
 

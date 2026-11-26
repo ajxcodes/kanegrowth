@@ -1,4 +1,4 @@
-//! SEC-11 / BUG-24: the packaged desktop app is cross-site to `api.corvale.app`, so the
+//! SEC-11 / BUG-24: the packaged desktop app is cross-site to `api.kanegrowth.app`, so the
 //! `SameSite=Lax` refresh cookie is never sent and the cookie-only refresh path logs the user
 //! out at the access-token TTL. Instead the desktop client receives the rotated refresh token in
 //! the auth response body and stores it here, in the OS-provided credential store:
@@ -9,20 +9,22 @@
 //! read/write/delete primitive over the highest-value store on the machine. `db_key.rs` owns a
 //! separate, equally fixed entry for the SQLCipher key.
 //!
-//! The frontend (`src/utils/refreshTokenStore.ts`) treats every failure as non-fatal - a locked
+//! The frontend (`src/lib/refreshTokenStore.ts`) treats every failure as non-fatal - a locked
 //! or unavailable keychain just means the session won't outlive the access-token TTL on that
 //! machine, which is the pre-fix behaviour. Nothing here ever falls back to plaintext storage.
 
 use keyring::{Entry, Error as KeyringError};
 
+// NOTE: The keychain service / account were renamed during the rebrand (previous values were the
+// pre-rebrand app identifier and `<old-brand>_refresh_token`). Dropping any pre-rebrand sessions on
+// upgrade is intentional: KaneGrowth is a new fork with no existing installs, so no migration is provided.
+
 /// Keychain service name. Matches the Tauri bundle identifier so the entry is easy to locate in
 /// Credential Manager / Keychain Access when debugging.
-const SERVICE: &str = "com.corvale.app";
+const SERVICE: &str = "com.kanegrowth.app";
 
 /// The one entry these commands manage. Fixed in Rust, never passed from the webview (SEC-42).
-/// Kept as the historical value so tokens stored by pre-SEC-42 builds are still found after an
-/// upgrade.
-const REFRESH_TOKEN_ACCOUNT: &str = "corvale_refresh_token";
+const REFRESH_TOKEN_ACCOUNT: &str = "kanegrowth_refresh_token";
 
 fn entry() -> Result<Entry, String> {
     Entry::new(SERVICE, REFRESH_TOKEN_ACCOUNT).map_err(|e| e.to_string())
@@ -56,13 +58,9 @@ pub fn keychain_delete() -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     #[test]
-    fn service_name_matches_the_bundle_identifier() {
-        assert_eq!(super::SERVICE, "com.corvale.app");
-    }
-
-    #[test]
-    fn refresh_token_entry_name_is_fixed() {
+    fn service_name_matches_kanegrowth_bundle_identifier_and_token_key() {
+        assert_eq!(super::SERVICE, "com.kanegrowth.app");
         // SEC-42: the account name is a Rust constant, not a webview-supplied argument.
-        assert_eq!(super::REFRESH_TOKEN_ACCOUNT, "corvale_refresh_token");
+        assert_eq!(super::REFRESH_TOKEN_ACCOUNT, "kanegrowth_refresh_token");
     }
 }

@@ -1,5 +1,5 @@
 /**
- * Central copy for the standing notes shown near Corvale's predictive/advisory surfaces (V2) and
+ * Central copy for the standing notes shown near KaneGrowth's predictive/advisory surfaces (V2) and
  * near the saver/pushover mechanics that are easy to misread as real money movement (V3). Rendered
  * through `components/ui/Disclaimer.tsx`, usually via `PageHeader`'s `note` slot. Not dismissible by
  * design - always-on context, not one-time hints.
@@ -18,9 +18,9 @@ export const DISCLAIMERS = {
     reportsAverages:
         'Savings rate and period averages describe the selected date range only — they are not forecasts of future income or spending.',
     subscriptions:
-        'This list is inferred from recurring transaction patterns. Corvale can miss irregular charges or flag a one-off repeat, so treat it as a starting point rather than a complete record.',
+        'This list is inferred from recurring transaction patterns. KaneGrowth can miss irregular charges or flag a one-off repeat, so treat it as a starting point rather than a complete record.',
     saver:
-        'Adding to your saver moves no money and creates no transaction. It only lowers the spendable balance Corvale shows you — an earmark to remind you that amount is set aside. Your bank account is untouched.',
+        'Adding to your saver moves no money and creates no transaction. It only lowers the spendable balance KaneGrowth shows you — an earmark to remind you that amount is set aside. Your bank account is untouched.',
     pushover:
         'A rollover moves no money either. It snapshots your saver balance into history and resets the saver to zero, which returns that amount to your displayed spendable balance. Nothing enters or leaves your bank account.',
 } as const

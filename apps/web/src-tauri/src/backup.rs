@@ -55,7 +55,7 @@ pub async fn open_backup_file(app: AppHandle) -> Result<Option<String>, String> 
     let picked = app
         .dialog()
         .file()
-        .add_filter("Corvale backup", &["json"])
+        .add_filter("KaneGrowth backup", &["json"])
         .blocking_pick_file();
 
     let Some(file_path) = picked else {
@@ -73,7 +73,7 @@ mod tests {
 
     #[test]
     fn maps_known_extensions_case_insensitively() {
-        assert_eq!(dialog_filter("corvale-backup.json"), Some(("JSON", "json")));
+        assert_eq!(dialog_filter("kanegrowth-backup.json"), Some(("JSON", "json")));
         assert_eq!(dialog_filter("report.CSV"), Some(("CSV", "csv")));
         assert_eq!(dialog_filter("report.Pdf"), Some(("PDF", "pdf")));
         assert_eq!(dialog_filter("backup.zip"), Some(("ZIP archive", "zip")));

@@ -6,10 +6,10 @@ import { isAllowedExternalUrl } from '../safeExternalUrl'
 
 describe('isAllowedExternalUrl', () => {
     it('allows http, https and mailto', () => {
-        expect(isAllowedExternalUrl('https://github.com/RRI-Atharv37/corvale/releases/latest')).toBe(true)
-        expect(isAllowedExternalUrl('https://api.corvale.app/downloads/Corvale_1.0.2_x64.dmg')).toBe(true)
+        expect(isAllowedExternalUrl('https://github.com/ajxcodes/kanegrowth/releases/latest')).toBe(true)
+        expect(isAllowedExternalUrl('https://api.kanegrowth.app/downloads/KaneGrowth_1.0.2_x64.dmg')).toBe(true)
         expect(isAllowedExternalUrl('http://localhost:5174/desktop/overview')).toBe(true)
-        expect(isAllowedExternalUrl('mailto:support@corvale.app')).toBe(true)
+        expect(isAllowedExternalUrl('mailto:support@kanegrowth.app')).toBe(true)
     })
 
     it('rejects javascript:, data:, and other executable schemes', () => {

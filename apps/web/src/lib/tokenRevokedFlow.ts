@@ -6,7 +6,7 @@
  */
 
 /** Dispatched by `axiosInstance` on a confirmed `TOKEN_REVOKED` response; `UserContext` listens for it. */
-export const TOKEN_REVOKED_EVENT = 'corvale:token-revoked'
+export const TOKEN_REVOKED_EVENT = 'kanegrowth:token-revoked'
 
 export interface HandleTokenRevokedOptions {
     hasUnsyncedChanges: boolean

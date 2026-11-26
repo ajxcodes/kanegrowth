@@ -2,20 +2,20 @@
 
 ## The short version
 
-Corvale sets **one cookie**. It is the one that keeps you signed in, and the app cannot work
+KaneGrowth sets **one cookie**. It is the one that keeps you signed in, and the app cannot work
 without it.
 
 There are no analytics cookies, no advertising cookies, and no third-party trackers. That is why
 you have never seen a cookie consent banner here — there is nothing to consent to.
 
-This page covers the hosted Corvale service at corvale.app. Self-hosted installations are
+This page covers the hosted KaneGrowth service at kanegrowth.app. Self-hosted installations are
 run by whoever operates them.
 
 ## The cookie we set
 
 | | |
 | --- | --- |
-| **Name** | `corvale_refresh` |
+| **Name** | `kanegrowth_refresh` |
 | **Purpose** | Keeps you signed in and lets the app renew your session |
 | **Type** | Strictly necessary |
 | **Lifetime** | 7 days by default |
@@ -30,10 +30,10 @@ browser even without reading the cookie.
 cross-site request forgery. It is a restriction, not a complete block: browsers still send a `Lax`
 cookie on some top-level cross-site navigations.
 
-If you signed up before Corvale was renamed, you may still have an old `spndr_refresh` cookie.
-Corvale clears it when you sign out.
+If you signed up before KaneGrowth was renamed, you may still have an old `spndr_refresh` cookie.
+KaneGrowth clears it when you sign out.
 
-## What Corvale stores in your browser
+## What KaneGrowth stores in your browser
 
 These are not cookies — they are local storage, which stays on your device and is never sent to
 our servers automatically. We list them because you deserve the whole picture.
@@ -47,7 +47,7 @@ our servers automatically. We list them because you deserve the whole picture.
 | A count of failed PIN attempts | Locks the local data after repeated wrong entries | Reset on a correct PIN; cleared with site data |
 | Whether you have seen the PIN setup prompt | So you are not asked twice | Until you clear site data |
 
-Corvale also sets one **session storage** key, which records that your timezone has already been
+KaneGrowth also sets one **session storage** key, which records that your timezone has already been
 checked in this browser tab. It disappears when you close the tab.
 
 **Your access token is held in memory only.** It is never written to local storage or to a
@@ -56,7 +56,7 @@ cookie, and it disappears when you close the tab.
 ### What browser storage does and does not protect
 
 Browser storage is protected by your browser's own site isolation and origin controls, so another
-website cannot read Corvale's storage. It should **not** be treated as equivalent to encrypted
+website cannot read KaneGrowth's storage. It should **not** be treated as equivalent to encrypted
 storage against someone who already has access to your browser profile, your operating system
 account, or your unlocked device.
 
@@ -84,7 +84,7 @@ to your account.
 
 Clearing your browser's site data, signing out, or uninstalling the desktop app removes the local
 copy. Nothing on the server changes. If you sign out while some changes have not synced yet,
-Corvale offers to sync them first so they are not lost.
+KaneGrowth offers to sync them first so they are not lost.
 
 ## Third-party services
 
@@ -98,11 +98,11 @@ may set its own cookies and browser storage under its own terms. That processing
 [Terms of Service](https://www.hcaptcha.com/terms). hCaptcha is also listed as a sub-processor in
 our [Privacy Policy](./privacy.md).
 
-If the captcha is switched off, no third-party cookies or browser storage are set by Corvale.
+If the captcha is switched off, no third-party cookies or browser storage are set by KaneGrowth.
 
 ## What we will never do
 
-Corvale does not use cookies or local storage for analytics, advertising, profiling, or
+KaneGrowth does not use cookies or local storage for analytics, advertising, profiling, or
 cross-site tracking.
 
 If we ever add product analytics, it will be a self-hosted, privacy-respecting tool, and this
@@ -125,18 +125,18 @@ table above is the part that describes what is actually stored and why.
 
 | Key | Corresponds to |
 | --- | --- |
-| `corvale_active_workspace_id` | Current workspace |
-| `corvale_cached_user` | Cached name and preferences |
-| `corvale_offline_grant` | Signed offline permission slip |
-| `corvale_pin_salt`, `corvale_pin_verifier` | PIN verifier and salt |
-| `corvale_pin_attempts` | Failed PIN attempt count |
-| `corvale_pin_prompt_seen` | PIN setup prompt already shown |
-| `spndr_pin_salt`, `spndr_pin_verifier`, `spndr_pin_attempts` | The same PIN values under their pre-rename names. Corvale copies them to the `corvale_` keys the first time it sees them |
-| `corvale:timezone-synced` (session storage) | Timezone already checked this tab |
+| `kanegrowth_active_workspace_id` | Current workspace |
+| `kanegrowth_cached_user` | Cached name and preferences |
+| `kanegrowth_offline_grant` | Signed offline permission slip |
+| `kanegrowth_pin_salt`, `kanegrowth_pin_verifier` | PIN verifier and salt |
+| `kanegrowth_pin_attempts` | Failed PIN attempt count |
+| `kanegrowth_pin_prompt_seen` | PIN setup prompt already shown |
+| `spndr_pin_salt`, `spndr_pin_verifier`, `spndr_pin_attempts` | The same PIN values under their pre-rename names. KaneGrowth copies them to the `kanegrowth_` keys the first time it sees them |
+| `kanegrowth:timezone-synced` (session storage) | Timezone already checked this tab |
 
 ## Changes and contact
 
 If this page changes materially we will update the version at the top and ask you to review it
 next time you sign in.
 
-Questions: privacy@corvale.app. See also the [Privacy Policy](./privacy.md).
+Questions: privacy@kanegrowth.app. See also the [Privacy Policy](./privacy.md).

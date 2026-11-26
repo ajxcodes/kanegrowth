@@ -1,17 +1,17 @@
 /** Shared copy — keep headlines, ads, and in-app messaging aligned. */
 export const BRAND = {
-    name: 'Corvale',
-    tagline: 'Stop guessing. Start knowing.',
+    name: 'KaneGrowth',
+    tagline: 'Building wealth from good habits at home.',
     headline: 'Know where every dollar went',
-    audience: 'Students and young adults with irregular income',
+    audience: 'Households and individuals building lasting financial habits',
     adHook: 'Your balance dropped $800. Name one purchase.',
     cta: 'Start tracking free',
     ctaSecondary: 'See how it works',
 } as const
 
 export const AUTHOR = {
-    name: 'Atharv Dewangan',
-    github: 'https://github.com/RRI-Atharv37',
+    name: 'KaneGrowth Contributors',
+    github: 'https://github.com/ajxcodes/kanegrowth',
 } as const
 
 export const PAIN_POINTS = [

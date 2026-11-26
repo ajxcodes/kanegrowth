@@ -14,7 +14,7 @@ import { LEGAL_DOCUMENTS, LegalDocument } from '@/legal'
 const LegalPage: React.FC<{ document: LegalDocument }> = ({ document: doc }) => {
     useEffect(() => {
         const previous = window.document.title
-        window.document.title = `${doc.title} · Corvale`
+        window.document.title = `${doc.title} · KaneGrowth`
         return () => {
             window.document.title = previous
         }
@@ -29,7 +29,7 @@ const LegalPage: React.FC<{ document: LegalDocument }> = ({ document: doc }) => 
                         to="/"
                         className="text-sm text-text-secondary transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 rounded-sm"
                     >
-                        Back to Corvale
+                        Back to KaneGrowth
                     </Link>
                 </div>
             </header>

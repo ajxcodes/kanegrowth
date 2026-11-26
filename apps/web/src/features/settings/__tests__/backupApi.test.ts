@@ -23,7 +23,7 @@ describe('exportBackup (BUG-26: desktop-aware save)', () => {
 
     await exportBackup('json')
 
-    expect(saveExportedFileMock).toHaveBeenCalledWith(blob, 'corvale-backup.json')
+    expect(saveExportedFileMock).toHaveBeenCalledWith(blob, 'kanegrowth-backup.json')
   })
 
   it('names a ZIP export .zip and forwards the workspace scope as a param', async () => {
@@ -33,6 +33,6 @@ describe('exportBackup (BUG-26: desktop-aware save)', () => {
     await exportBackup('zip', 'ws-1')
 
     expect(getMock.mock.calls[0][1]).toMatchObject({ params: { format: 'zip', workspaceId: 'ws-1' } })
-    expect(saveExportedFileMock).toHaveBeenCalledWith(blob, 'corvale-backup.zip')
+    expect(saveExportedFileMock).toHaveBeenCalledWith(blob, 'kanegrowth-backup.zip')
   })
 })

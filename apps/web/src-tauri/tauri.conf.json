@@ -21,7 +21,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://js.hcaptcha.com; style-src 'self' 'unsafe-inline' https://newassets.hcaptcha.com; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.corvale.app ipc: http://ipc.localhost https://hcaptcha.com https://newassets.hcaptcha.com; frame-src 'self' blob: https://newassets.hcaptcha.com; base-uri 'self'; form-action 'self'; object-src 'none'"
+      "csp": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://js.hcaptcha.com; style-src 'self' 'unsafe-inline' https://newassets.hcaptcha.com; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.kanegrowth.app ipc: http://ipc.localhost https://hcaptcha.com https://newassets.hcaptcha.com; frame-src 'self' blob: https://newassets.hcaptcha.com; base-uri 'self'; form-action 'self'; object-src 'none'"
     }
   },
   "bundle": {
@@ -47,7 +47,7 @@
     "updater": {
       "active": true,
       "endpoints": [
-        "https://github.com/RRI-Atharv37/corvale/releases/latest/download/latest.json"
+        "https://github.com/ajxcodes/kanegrowth/releases/latest/download/latest.json"
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM2RDU0NEE1M0U4OEExM0MKUldROG9ZZytwVVRWeGxLOEY4Sk1XSnB4VDlWNXZaSVBBVjh1eDBnbjRUL3FTRnBtSmozSkdDVjAK"
     }

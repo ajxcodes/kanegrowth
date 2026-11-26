@@ -26,7 +26,7 @@ const TONE_STYLES: Record<DisclaimerTone, { container: string; icon: string; Ico
 }
 
 /**
- * Standing, **non-dismissible** disclaimer shown near Corvale's predictive and advisory surfaces
+ * Standing, **non-dismissible** disclaimer shown near KaneGrowth's predictive and advisory surfaces
  * (V2). Copy lives in `utils/disclaimers.ts`; this is usually rendered through `PageHeader`'s `note`
  * slot. There is deliberately no close button or dismissed state - the context is always relevant,
  * not a one-time hint.

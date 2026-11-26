@@ -16,7 +16,7 @@ export const exportPersonalBackup = async (): Promise<void> => {
     if (isLocalFirstEnabled()) {
         const db = await getLocalDb()
         const payload = await exportLocalBackup(db, { workspaceId: null })
-        const filename = `corvale-backup-personal-${payload.exportedAt.slice(0, 10)}.json`
+        const filename = `kanegrowth-backup-personal-${payload.exportedAt.slice(0, 10)}.json`
         const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
         await saveExportedFile(blob, filename)
         return

@@ -79,7 +79,7 @@ const CHASE_CSV = [
   '01/06/2026,01/07/2026,Employer Payroll,,Payment,2000.00,',
 ].join('\n')
 
-const CORVALE_EXPORT_CSV = [
+const KANEGROWTH_EXPORT_CSV = [
   'Type,Title,Amount,Currency,Category,Date,Description,Source,Payment Method,Tags,Status',
   'expense,Grocery Store,45.50,USD,Food,2026-01-05,Weekly shop,manual,card,groceries,posted',
 ].join('\n')
@@ -108,24 +108,24 @@ describe('shared/csvImport parity: parse & format detection', () => {
     expect(suggestedMapping.amount).toBe('Amount')
   })
 
-  it('detects a corvale_export CSV format matching the export column order (matches server)', () => {
-    const { headers } = parseCsvContent(CORVALE_EXPORT_CSV)
-    expect(detectImportFormat(headers)).toBe('corvale_export')
+  it('detects a kanegrowth_export CSV format matching the export column order (matches server)', () => {
+    const { headers } = parseCsvContent(KANEGROWTH_EXPORT_CSV)
+    expect(detectImportFormat(headers)).toBe('kanegrowth_export')
   })
 
   /**
    * V7.3c rename-compat shim: the internal format tag returned by `detectImportFormat` renames
-   * from `'spndr_export'` to `'corvale_export'`, but `'spndr_export'` must stay a valid
+   * from `'spndr_export'` to `'kanegrowth_export'`, but `'spndr_export'` must stay a valid
    * `ImportFormat` value that `suggestColumnMapping` still resolves identically - this is what
    * removes the backend/frontend atomic-deploy constraint (an older build anywhere in the
    * pipeline that still produces/expects `'spndr_export'` keeps working) and preserves every
    * export a tester already made before the rename shipped (ROADMAP's V7 compat matrix).
    */
-  it('accepts the legacy spndr_export format tag as equivalent to corvale_export (accept legacy on read)', () => {
-    const { headers } = parseCsvContent(CORVALE_EXPORT_CSV)
+  it('accepts the legacy spndr_export format tag as equivalent to kanegrowth_export (accept legacy on read)', () => {
+    const { headers } = parseCsvContent(KANEGROWTH_EXPORT_CSV)
 
     const legacyMapping = suggestColumnMapping(headers, 'spndr_export')
-    const currentMapping = suggestColumnMapping(headers, 'corvale_export')
+    const currentMapping = suggestColumnMapping(headers, 'kanegrowth_export')
 
     expect(legacyMapping).toEqual(currentMapping)
     expect(legacyMapping.date).toBe('Date')

@@ -2,11 +2,11 @@
 
 ## Scope — what this policy covers
 
-This policy covers **the hosted Corvale service** operated by Atharv Dewangan at
-corvale.app.
+This policy covers **the hosted KaneGrowth service** operated by Atharv Dewangan at
+kanegrowth.app.
 
-It does **not** cover self-hosted installations. Corvale is free and open-source software under
-the GNU AGPL v3.0, and anyone may run their own copy. If you use a Corvale instance that someone
+It does **not** cover self-hosted installations. KaneGrowth is free and open-source software under
+the GNU AGPL v3.0, and anyone may run their own copy. If you use a KaneGrowth instance that someone
 else operates, that operator decides how your data is handled, and this policy does not apply to
 them. Ask them for their own policy.
 
@@ -15,7 +15,7 @@ them. Ask them for their own policy.
 We collect very little **about** you — a name, an email address, a few preferences. There is no
 bank connection, no analytics, no advertising, and no profiling.
 
-But the information you choose to **put into** Corvale is your financial life: what you earn, what
+But the information you choose to **put into** KaneGrowth is your financial life: what you earn, what
 you owe, what you spend it on, and the receipts to go with it. That is sensitive by nature, whoever
 holds it. We treat it that way, and the sections below tell you exactly what we hold, why, how it
 is protected, and what you can do about it.
@@ -32,13 +32,13 @@ on Google Cloud infrastructure in South Carolina — that is where the applicati
 database and the backups run. [Where your data goes](#where-your-data-goes) explains this and the
 legal basis for it.
 
-You are welcome to use Corvale from anywhere, with one exception: **we do not offer it in the
+You are welcome to use KaneGrowth from anywhere, with one exception: **we do not offer it in the
 European Economic Area or the UK, and we have not appointed a representative there** — see
 [If you are in the EEA or the UK](#if-you-are-in-the-eea-or-the-uk) for what that means and what
 you can still ask of us.
 
 - **Grievance Officer:** Atharv Dewangan
-- **Email:** privacy@corvale.app
+- **Email:** privacy@kanegrowth.app
 - **Response window for data-rights requests and complaints:** 30 days
 
 ## What we collect
@@ -50,7 +50,7 @@ you can still ask of us.
   authenticate you, and it is stored only as a one-way bcrypt-derived hash. We do not store it in
   plaintext, and we cannot read it back or recover it for you
 - Your preferred currency, date format, and page-size preference
-- Your timezone. Corvale reads this from your device when you sign up and re-checks it once per
+- Your timezone. KaneGrowth reads this from your device when you sign up and re-checks it once per
   browser session, updating your profile automatically if it has changed. It keeps date filters,
   due dates and reminders aligned with where you actually are. There is no field to type it into,
   and we do not use it to locate you
@@ -75,11 +75,11 @@ for, and it can be withdrawn separately — see [Your rights](#your-rights).
 
 ### The financial information you enter
 
-Everything you record in Corvale: transactions, accounts and balances, budgets, savings goals,
+Everything you record in KaneGrowth: transactions, accounts and balances, budgets, savings goals,
 categories, tags, automation rules, templates, saver and rollover state, reconciliation sessions,
 saved reports, and workspaces you create or join.
 
-**You enter all of this yourself.** Corvale has no bank connection and never retrieves data from
+**You enter all of this yourself.** KaneGrowth has no bank connection and never retrieves data from
 your bank or any other financial institution.
 
 This is the most sensitive category of information in the service. It is not "just numbers" — a
@@ -88,10 +88,10 @@ transaction history describes where you go, what you buy, who you pay and what y
 ### People you invite to a workspace
 
 If you invite someone to a workspace, you give us their email address. We use it to find their
-Corvale account and to create the invitation, and we keep the invitation until it is accepted,
+KaneGrowth account and to create the invitation, and we keep the invitation until it is accepted,
 declined, or withdrawn.
 
-An invitation can only reach an address that already has a Corvale account, so sending one tells
+An invitation can only reach an address that already has a KaneGrowth account, so sending one tells
 you whether that address is registered here. Invite only people who are expecting it.
 
 **What happens to records you add to a shared workspace depends on how you leave.** If you leave
@@ -142,7 +142,7 @@ records, and avoid uploading information about other people that serves no purpo
 
 ### The desktop app and offline use
 
-Corvale also runs as an installable desktop app and as an offline-capable web app. Both keep a
+KaneGrowth also runs as an installable desktop app and as an offline-capable web app. Both keep a
 copy of your records in a local database on your own device so they work without a connection.
 That copy stays on your device; it reaches us only through the ordinary sync back to your account.
 The [Cookie Policy](./cookies.md) describes what is stored there and how to clear it.
@@ -155,10 +155,10 @@ those releases. It sends nothing about you or your records.
 
 We think this list matters as much as the one above.
 
-- **No bank connections.** Corvale never links to your bank, so we never see your bank
+- **No bank connections.** KaneGrowth never links to your bank, so we never see your bank
   credentials, your real balances, or any transaction you did not type in yourself.
 - **No analytics.** No page-view tracking, no product analytics, no session recording.
-- **No advertising or third-party trackers.** Corvale does not carry any.
+- **No advertising or third-party trackers.** KaneGrowth does not carry any.
 - **No device fingerprinting.**
 - **No externally hosted fonts, and no third-party scripts** — with one exception: when the signup
   captcha is switched on, hCaptcha's script loads on the signup page only. Everything else the app
@@ -217,10 +217,10 @@ Because the financial records you enter can reveal a lot about you, we apply the
 
 ## Cookies and local storage
 
-Corvale sets **one cookie**, and it is the one that keeps you signed in. There are no analytics
+KaneGrowth sets **one cookie**, and it is the one that keeps you signed in. There are no analytics
 or advertising cookies, and therefore no cookie consent banner.
 
-See the [Cookie Policy](./cookies.md) for the full detail, including what Corvale stores in your
+See the [Cookie Policy](./cookies.md) for the full detail, including what KaneGrowth stores in your
 browser's local storage.
 
 The 2026-09-01 version of this policy accompanies a clarification in the Cookie Policy: on the
@@ -237,7 +237,7 @@ you use.
 | --- | --- | --- | --- |
 | Google LLC (Google Cloud) | Runs the application servers, the database, receipt storage and the backups; also hosts the mailbox that receives messages sent to our published addresses | United States (South Carolina) | Yes |
 | Resend (Resend, Inc.) | Sends password-reset and email-verification messages only | United States | Yes |
-| Cloudflare, Inc. | Provides DNS for corvale.app and routes email sent to our published addresses to our mailbox | United States, over a global edge network | Yes |
+| Cloudflare, Inc. | Provides DNS for kanegrowth.app and routes email sent to our published addresses to our mailbox | United States, over a global edge network | Yes |
 | GitHub, Inc. | Serves desktop-app updates | United States | Only for the desktop app |
 | Sentry | Reports unexpected server errors so we can fix them | United States or the European Union, depending on the project region | Only when error reporting is enabled |
 | hCaptcha (Intuition Machines, Inc.) | Checks that a signup is not automated | United States | Only when the signup captcha is enabled |
@@ -276,10 +276,10 @@ contractual clauses or equivalent terms where those apply.
 
 ## If you are in the EEA or the UK
 
-**We do not offer the Corvale service in the European Economic Area or the UK, and we have not
+**We do not offer the KaneGrowth service in the European Economic Area or the UK, and we have not
 appointed a representative under Article 27 of the EU GDPR or the UK GDPR.**
 
-We say this plainly rather than leaving it to be inferred. Corvale is operated from India and is
+We say this plainly rather than leaving it to be inferred. KaneGrowth is operated from India and is
 generally available elsewhere, but being reachable from a place is not the same as being offered
 there. We do not target the EEA or the UK: there is no local pricing, no local currency default,
 no localised language, no marketing directed at those markets, and no support offered in them. On
@@ -305,7 +305,7 @@ and you can export everything and delete your account at any time.
   account it is erased from the live service immediately — see below.
 - **Login sessions:** refresh tokens expire on their own, by default after 7 days.
 - **Rate-limit counters:** expire automatically, within minutes.
-- **Deleted records:** Corvale keeps a short-lived marker so the deletion syncs to your other
+- **Deleted records:** KaneGrowth keeps a short-lived marker so the deletion syncs to your other
   devices, and then purges the marker.
 - **Error reports:** retained by our error-tracking provider for their standard retention period
   and then deleted.
@@ -338,7 +338,7 @@ You can:
 
 - **Get a copy of your data.** Settings → Backup and Restore exports everything as JSON, or as a
   ZIP including your receipts. **Export is never restricted, in any circumstances.**
-- **Correct your data.** Everything in Corvale is editable in the app.
+- **Correct your data.** Everything in KaneGrowth is editable in the app.
 - **Delete your data.** Settings → Delete Account erases your account and every private record
   attached to it, including all receipt files, from the live service. This is a real deletion, not
   a hidden flag. Records you contributed to a workspace you share with others are kept but
@@ -357,21 +357,21 @@ You can:
   operate in the EEA or the UK, but we offer it to everyone rather than gate it by geography.
 - **Nominate someone** (India): under section 14 of the DPDP Act you may nominate another
   individual to exercise your rights under the Act on your behalf if you die or become unable to
-  do so yourself. Email privacy@corvale.app to record a nomination.
+  do so yourself. Email privacy@kanegrowth.app to record a nomination.
 - **Complain.** Contact our Grievance Officer using the details above. In India, if you are not
   satisfied with our response, you may complain to the Data Protection Board of India. If a data
   protection authority elsewhere has jurisdiction over you, you are free to complain to it — see
   [If you are in the EEA or the UK](#if-you-are-in-the-eea-or-the-uk) for our position on that.
 
 Use the in-app tools first — they are immediate and need no request. If you would rather we
-handled it, email privacy@corvale.app and we will respond within 30 days.
+handled it, email privacy@kanegrowth.app and we will respond within 30 days.
 
 We may need to confirm who you are before acting on a request, so that nobody else can use these
 rights against your account.
 
 ## If you are in the United States
 
-You are welcome to use Corvale. We are not a US business — the service is operated from India —
+You are welcome to use KaneGrowth. We are not a US business — the service is operated from India —
 but your data is stored in the United States on Google Cloud infrastructure. See
 [Where your data goes](#where-your-data-goes).
 
@@ -385,12 +385,12 @@ such as California's CCPA/CPRA also give rights of access, correction, deletion 
 the tools in [Your rights](#your-rights) provide all of them to everyone, whatever state you are
 in, and we do not discriminate against anyone for exercising them.
 
-Corvale is not a bank, lender, broker, or payment service, and it has no connection to your
-financial accounts — see [Corvale never moves money](./terms.md) in the Terms.
+KaneGrowth is not a bank, lender, broker, or payment service, and it has no connection to your
+financial accounts — see [KaneGrowth never moves money](./terms.md) in the Terms.
 
 ## Age requirement
 
-**You must be 18 or older to use the hosted Corvale service.**
+**You must be 18 or older to use the hosted KaneGrowth service.**
 
 India's DPDP Act treats anyone under 18 as a child and requires verifiable parental consent
 before their data can be processed. We are not able to verify parental consent reliably, so
@@ -402,7 +402,7 @@ stop processing their personal data and delete the account, subject to anything 
 us to retain.
 
 This age requirement applies to **the hosted service we operate**. It says nothing about who may
-obtain, study, modify or run the AGPL-licensed Corvale software, and it does not modify the rights
+obtain, study, modify or run the AGPL-licensed KaneGrowth software, and it does not modify the rights
 that licence grants.
 
 ## If something goes wrong
@@ -424,7 +424,7 @@ your rights will not interrupt you.
 ## Contact
 
 - **Grievance Officer:** Atharv Dewangan
-- **Email:** privacy@corvale.app
+- **Email:** privacy@kanegrowth.app
 - **Response window:** 30 days
 
 See also the [Contact page](./contact.md) for support and security routes.

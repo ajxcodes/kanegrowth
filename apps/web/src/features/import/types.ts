@@ -1,6 +1,6 @@
-// `'spndr_export'` is the pre-rename spelling of `'corvale_export'`, kept valid for one release
+// `'spndr_export'` is the pre-rename spelling of `'kanegrowth_export'`, kept valid for one release
 // as a rename-compat shim (V7.3c) — mirrors `shared/src/csvImport.ts`'s `ImportFormat`.
-export type ImportFormat = 'generic' | 'chase' | 'corvale_export' | 'spndr_export' | 'ofx' | 'qif'
+export type ImportFormat = 'generic' | 'chase' | 'kanegrowth_export' | 'spndr_export' | 'ofx' | 'qif'
 
 // Mirrors `shared/src/csvImport.ts`'s `ImportDateFormat` — token order for slash/dot/dash dates.
 export type ImportDateFormat = 'auto' | 'YMD' | 'MDY' | 'DMY'

@@ -14,14 +14,14 @@ export const IMPORT_MAX_ROWS = 2000
 export const IMPORT_PREVIEW_SAMPLE_ROWS = 5
 
 /**
- * `'spndr_export'` is the pre-rename spelling of `'corvale_export'`. It stays a valid
+ * `'spndr_export'` is the pre-rename spelling of `'kanegrowth_export'`. It stays a valid
  * `ImportFormat` (V7.3c rename-compat shim): `detectImportFormat` only ever returns the new
  * tag, but `suggestColumnMapping` still resolves the legacy one identically, so an older build
  * anywhere in the pipeline that produces/expects `'spndr_export'` keeps working and every CSV a
  * tester exported before the rename still imports. Removes the backend/frontend atomic-deploy
  * constraint entirely. Safe to drop one release after v1.0.0. See ROADMAP's V7 compat matrix.
  */
-export type ImportFormat = 'generic' | 'chase' | 'corvale_export' | 'spndr_export' | 'ofx' | 'qif'
+export type ImportFormat = 'generic' | 'chase' | 'kanegrowth_export' | 'spndr_export' | 'ofx' | 'qif'
 
 export type ColumnMappingField =
     | 'date'
@@ -173,11 +173,11 @@ const CHASE_HEADERS = new Set([
 ])
 
 /**
- * Mirrors `backend/utils/transactionUtils.ts`'s `CSV_HEADERS` (the Corvale
+ * Mirrors `backend/utils/transactionUtils.ts`'s `CSV_HEADERS` (the KaneGrowth
  * export column order). Duplicated as a literal here rather than imported,
  * since `transactionUtils.ts` is not itself a pure/dependency-free module.
  */
-const CORVALE_CSV_HEADERS = [
+const KANEGROWTH_CSV_HEADERS = [
     'Type',
     'Title',
     'Amount',
@@ -191,7 +191,7 @@ const CORVALE_CSV_HEADERS = [
     'Status',
 ]
 
-const CORVALE_EXPORT_HEADERS = CORVALE_CSV_HEADERS.map((header) => normalizeHeader(header))
+const KANEGROWTH_EXPORT_HEADERS = KANEGROWTH_CSV_HEADERS.map((header) => normalizeHeader(header))
 
 export const isOfxContent = (content: string): boolean => {
     const trimmed = content.trimStart()
@@ -304,8 +304,8 @@ export const parseCsvContent = (content: string, delimiter?: ImportDelimiter): P
 export const detectImportFormat = (headers: string[]): ImportFormat => {
     const normalized = headers.map(normalizeHeader)
 
-    if (normalized.every((header, index) => header === CORVALE_EXPORT_HEADERS[index])) {
-        return 'corvale_export'
+    if (normalized.every((header, index) => header === KANEGROWTH_EXPORT_HEADERS[index])) {
+        return 'kanegrowth_export'
     }
 
     const normalizedSet = new Set(normalized)
@@ -334,7 +334,7 @@ const findHeader = (headers: string[], candidates: string[]): string | undefined
 }
 
 export const suggestColumnMapping = (headers: string[], format: ImportFormat): ColumnMapping => {
-    if (format === 'corvale_export' || format === 'spndr_export') {
+    if (format === 'kanegrowth_export' || format === 'spndr_export') {
         return {
             date: findHeader(headers, ['date']),
             description: findHeader(headers, ['title', 'description']),
@@ -810,7 +810,7 @@ export const parseOfxContent = (content: string): ParsedStatementResult => {
 /**
  * Parse a QIF file (BUG-23). Line-oriented: `!Type:` control lines, then transaction records
  * terminated by `^`. Fields used: `D` date, `T`/`U` amount, `P` payee, `M` memo, `N` cheque
- * number / action. `L` (category) is intentionally ignored — Corvale categorises its own way.
+ * number / action. `L` (category) is intentionally ignored — KaneGrowth categorises its own way.
  */
 export const parseQifContent = (content: string): ParsedStatementResult => {
     const lines = content.split(/\r\n|\r|\n/)

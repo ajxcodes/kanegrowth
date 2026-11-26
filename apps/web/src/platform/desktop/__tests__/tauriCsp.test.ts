@@ -90,7 +90,7 @@ describe('Strict Tauri CSP (D2, SEC-04)', () => {
         // A bare `https:` scheme source would admit every HTTPS origin; the Tauri layer must be
         // as tight as the index.html meta policy (which uses VITE_API_ORIGIN) on its own.
         expect(sources).not.toContain('https:')
-        expect(connectSrc).toContain('https://api.corvale.app')
+        expect(connectSrc).toContain('https://api.kanegrowth.app')
     })
 
     it('frame-src allows blob: (the in-app PDF receipt viewer, BUG-25) and only the named hCaptcha challenge origin - no other remote origin (BUG-40)', () => {
@@ -128,6 +128,6 @@ describe('hCaptcha CSP origins on desktop (BUG-40)', () => {
         const connectSrc = csp.match(/connect-src([^;]*)/)?.[1] ?? ''
         expect(connectSrc).toContain('https://hcaptcha.com')
         expect(connectSrc).toContain('https://newassets.hcaptcha.com')
-        expect(connectSrc).toContain('https://api.corvale.app')
+        expect(connectSrc).toContain('https://api.kanegrowth.app')
     })
 })

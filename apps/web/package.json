@@ -1,9 +1,9 @@
 {
-  "name": "corvale",
+  "name": "kanegrowth-web",
   "private": true,
   "version": "0.0.0",
   "license": "AGPL-3.0-or-later",
-  "author": "Atharv Dewangan",
+  "author": "KaneGrowth Contributors",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -20,7 +20,7 @@
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
-    "tauri:icon": "tauri icon public/pwa-512.png"
+    "tauri:icon": "tauri icon public/icons/kanegrowth_logo_bonsai_dark_transparent.png"
   },
   "dependencies": {
     "@sqlite.org/sqlite-wasm": "^3.53.0-build1",

@@ -12,13 +12,13 @@ const wire = (overrides: Partial<DownloadManifestWire> = {}): DownloadManifestWi
     tag: 'v1.2.0',
     publishedAt: '2026-09-01T12:00:00Z',
     assets: [
-        { name: 'Corvale_1.2.0_x64_en-US.msi', url: 'https://ex/msi', sha256: 'msi256', sizeBytes: 100 },
-        { name: 'Corvale_1.2.0_x64-setup.exe', url: 'https://ex/exe', sha256: 'exe256', sizeBytes: 90 },
-        { name: 'Corvale_1.2.0_aarch64.dmg', url: 'https://ex/arm', sha256: 'arm256', sizeBytes: 200 },
-        { name: 'Corvale_1.2.0_x64.dmg', url: 'https://ex/intel', sha256: 'intel256', sizeBytes: 210 },
-        { name: 'Corvale_1.2.0_amd64.deb', url: 'https://ex/deb', sha256: 'deb256', sizeBytes: 300 },
-        { name: 'Corvale-1.2.0-1.x86_64.rpm', url: 'https://ex/rpm', sha256: 'rpm256', sizeBytes: 305 },
-        { name: 'Corvale_1.2.0_amd64.AppImage', url: 'https://ex/appimage', sha256: 'ai256', sizeBytes: 8000 },
+        { name: 'KaneGrowth_1.2.0_x64_en-US.msi', url: 'https://ex/msi', sha256: 'msi256', sizeBytes: 100 },
+        { name: 'KaneGrowth_1.2.0_x64-setup.exe', url: 'https://ex/exe', sha256: 'exe256', sizeBytes: 90 },
+        { name: 'KaneGrowth_1.2.0_aarch64.dmg', url: 'https://ex/arm', sha256: 'arm256', sizeBytes: 200 },
+        { name: 'KaneGrowth_1.2.0_x64.dmg', url: 'https://ex/intel', sha256: 'intel256', sizeBytes: 210 },
+        { name: 'KaneGrowth_1.2.0_amd64.deb', url: 'https://ex/deb', sha256: 'deb256', sizeBytes: 300 },
+        { name: 'KaneGrowth-1.2.0-1.x86_64.rpm', url: 'https://ex/rpm', sha256: 'rpm256', sizeBytes: 305 },
+        { name: 'KaneGrowth_1.2.0_amd64.AppImage', url: 'https://ex/appimage', sha256: 'ai256', sizeBytes: 8000 },
     ],
     ...overrides,
 })
@@ -69,7 +69,7 @@ describe('mergeDownloadManifest', () => {
         const manifest = mergeDownloadManifest(
             wire({
                 assets: [
-                    { name: 'Corvale_1.2.0_x64-setup.exe', url: 'https://ex/exe', sha256: null, sizeBytes: null },
+                    { name: 'KaneGrowth_1.2.0_x64-setup.exe', url: 'https://ex/exe', sha256: null, sizeBytes: null },
                 ],
             })
         )

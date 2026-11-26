@@ -18,7 +18,7 @@ export const exportUnsyncedOps = async (): Promise<boolean> => {
 
         const blob = ensureExportBlob(JSON.stringify(ops, null, 2), 'json')
         const stamp = new Date().toISOString().replace(/:/g, '-')
-        return await saveExportedFile(blob, `corvale-unsynced-changes-${stamp}.json`)
+        return await saveExportedFile(blob, `kanegrowth-unsynced-changes-${stamp}.json`)
     } catch {
         return false
     }

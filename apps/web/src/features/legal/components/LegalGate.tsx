@@ -101,7 +101,7 @@ const LegalGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
                 <p className="mt-3 text-sm leading-relaxed text-text-secondary">
                     {isFirstTime
-                        ? 'Before you carry on, please review and accept the documents covering your use of Corvale. This only happens once.'
+                        ? 'Before you carry on, please review and accept the documents covering your use of KaneGrowth. This only happens once.'
                         : 'Our Terms of Service or Privacy Policy have changed since you last accepted them. Please review the current versions to continue.'}
                 </p>
 
@@ -125,7 +125,7 @@ const LegalGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 </ul>
 
                 <p className="mt-5 text-xs leading-relaxed text-fg-muted">
-                    Corvale is a record-keeping tool and does not provide financial advice. You must be
+                    KaneGrowth is a record-keeping tool and does not provide financial advice. You must be
                     18 or older to use it. Your data stays exportable and deletable at any time.
                 </p>
 

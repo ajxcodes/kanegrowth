@@ -7,7 +7,7 @@ import type { User } from '@lib/types/api'
  * this onto the local SQLite `User` row without changing this module's contract.
  */
 
-const CACHED_USER_KEY = 'corvale_cached_user'
+const CACHED_USER_KEY = 'kanegrowth_cached_user'
 
 export const getCachedUser = (): User | null => {
     const raw = localStorage.getItem(CACHED_USER_KEY)

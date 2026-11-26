@@ -36,8 +36,8 @@ import { clearPin, hasPinConfigured, migrateLegacyPinKeys, purgeLocalPinKeys, se
  * already use, so this spec doesn't depend on S8 having landed first.
  */
 
-const PIN_SALT_KEY = 'corvale_pin_salt'
-const PIN_VERIFIER_KEY = 'corvale_pin_verifier'
+const PIN_SALT_KEY = 'kanegrowth_pin_salt'
+const PIN_VERIFIER_KEY = 'kanegrowth_pin_verifier'
 const LEGACY_PIN_SALT_KEY = 'spndr_pin_salt'
 const LEGACY_PIN_VERIFIER_KEY = 'spndr_pin_verifier'
 const LEGACY_PIN_ATTEMPTS_KEY = 'spndr_pin_attempts'
@@ -245,7 +245,7 @@ describe('PIN verifier KDF context is frozen (V7.3e rename shim - never rename)'
 
 /**
  * V7.1 new acceptance spec: PIN key copy-forward. `PIN_SALT_KEY`/`PIN_VERIFIER_KEY`/
- * `PIN_ATTEMPTS_KEY` rename from `spndr_pin_*` to `corvale_pin_*` (V7.3e). Unlike the KDF
+ * `PIN_ATTEMPTS_KEY` rename from `spndr_pin_*` to `kanegrowth_pin_*` (V7.3e). Unlike the KDF
  * context above, these are just localStorage key *names*, not cryptographic material - but a
  * bare rename would still strand every existing PIN, since `hasPinConfigured`/`verifyStoredPin`
  * would look under the new key and find nothing, and the encrypted local DB would look
@@ -327,7 +327,7 @@ describe('PIN key copy-forward on rename (V7.3e rename shim)', () => {
 
         migrateLegacyPinKeys()
 
-        expect(localStorage.getItem('corvale_pin_attempts')).toBe('5')
+        expect(localStorage.getItem('kanegrowth_pin_attempts')).toBe('5')
         expect(localStorage.getItem(LEGACY_PIN_ATTEMPTS_KEY)).toBeNull()
     })
 })
@@ -336,7 +336,7 @@ describe('PIN key copy-forward on rename (V7.3e rename shim)', () => {
  * V6: on a build where local-first is disabled (the web build), a device that once ran a flag-on
  * build keeps an orphaned salt/verifier/attempts trio in localStorage that no UI can clear
  * (PinGate/PinSettings are unmounted). `bootstrapLocalDb` calls `purgeLocalPinKeys()` on that
- * path. It must recognise BOTH the current `corvale_pin_*` names and the pre-rename `spndr_pin_*`
+ * path. It must recognise BOTH the current `kanegrowth_pin_*` names and the pre-rename `spndr_pin_*`
  * ones, since the affected population is exactly the pre-rename devices.
  */
 describe('purgeLocalPinKeys (V6 orphaned-PIN cleanup on flag-off builds)', () => {
@@ -348,7 +348,7 @@ describe('purgeLocalPinKeys (V6 orphaned-PIN cleanup on flag-off builds)', () =>
         localStorage.clear()
         localStorage.setItem(PIN_SALT_KEY, 'salt')
         localStorage.setItem(PIN_VERIFIER_KEY, 'verifier')
-        localStorage.setItem('corvale_pin_attempts', '2')
+        localStorage.setItem('kanegrowth_pin_attempts', '2')
         localStorage.setItem(LEGACY_PIN_SALT_KEY, 'legacy-salt')
         localStorage.setItem(LEGACY_PIN_VERIFIER_KEY, 'legacy-verifier')
         localStorage.setItem(LEGACY_PIN_ATTEMPTS_KEY, '4')
@@ -358,7 +358,7 @@ describe('purgeLocalPinKeys (V6 orphaned-PIN cleanup on flag-off builds)', () =>
         for (const key of [
             PIN_SALT_KEY,
             PIN_VERIFIER_KEY,
-            'corvale_pin_attempts',
+            'kanegrowth_pin_attempts',
             LEGACY_PIN_SALT_KEY,
             LEGACY_PIN_VERIFIER_KEY,
             LEGACY_PIN_ATTEMPTS_KEY,
@@ -370,9 +370,9 @@ describe('purgeLocalPinKeys (V6 orphaned-PIN cleanup on flag-off builds)', () =>
 
     it('leaves unrelated localStorage keys alone and is a no-op on a device that never set a PIN', () => {
         localStorage.clear()
-        localStorage.setItem('corvale_something_else', 'keep me')
+        localStorage.setItem('kanegrowth_something_else', 'keep me')
 
         expect(() => purgeLocalPinKeys()).not.toThrow()
-        expect(localStorage.getItem('corvale_something_else')).toBe('keep me')
+        expect(localStorage.getItem('kanegrowth_something_else')).toBe('keep me')
     })
 })

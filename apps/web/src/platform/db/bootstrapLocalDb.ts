@@ -10,7 +10,7 @@ import { isTauriRuntime } from '@lib/isTauri'
 import { migrateLegacyPinKeys, purgeLocalPinKeys } from '../offline/pinStorage'
 import { seedAnalyticsHouseholdFixture } from './repositories/analyticsSeed'
 
-const LOCAL_DB_FILENAME = 'corvale.sqlite3'
+const LOCAL_DB_FILENAME = 'kanegrowth.sqlite3'
 
 export type LocalDbStorageMode = 'tauri' | 'opfs' | 'memory-fallback'
 
@@ -113,7 +113,7 @@ export const bootstrapLocalDb = async (): Promise<void> => {
     purgeLocalPinKeys()
   } else {
     // V7.3e: copy any pre-rename `spndr_pin_*` keys forward before anything reads
-    // `hasPinConfigured`, so a PIN set up before the Corvale rename still unlocks the local DB.
+    // `hasPinConfigured`, so a PIN set up before the KaneGrowth rename still unlocks the local DB.
     migrateLegacyPinKeys()
   }
 
