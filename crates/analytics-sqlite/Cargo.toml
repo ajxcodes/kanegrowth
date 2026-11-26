@@ -1,0 +1,12 @@
+[package]
+name = "analytics-sqlite"
+version = "0.1.0"
+edition = "2021"
+license = "AGPL-3.0-or-later"
+description = "Driven SQLCipher/SQLite adapter implementing KaneGrowth analytics ports"
+
+[dependencies]
+analytics-domain = { path = "../analytics-domain" }
+rusqlite = { version = "0.31", features = ["bundled-sqlcipher-vendored-openssl"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

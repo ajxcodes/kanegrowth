@@ -1,0 +1,7 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/analytics-domain",
+    "crates/analytics-sqlite",
+    "apps/web/src-tauri",
+]

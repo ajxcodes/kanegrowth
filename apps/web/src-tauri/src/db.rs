@@ -1,0 +1,705 @@
+use base64::Engine;
+use hmac::Hmac;
+use pbkdf2::pbkdf2;
+use rusqlite::types::{Value as SqlValue, ValueRef};
+use rusqlite::{Connection, ToSql};
+use serde_json::Value as JsonValue;
+use sha2::Sha256;
+use std::collections::HashMap;
+use std::io::Read;
+use std::path::Path;
+use std::sync::Mutex;
+use tauri::{AppHandle, Manager, State};
+
+/// Matches `frontend/corvale/src/db/encryption/deriveKey.ts`'s PBKDF2 iteration count. Exact
+/// cross-platform key parity isn't required (each device's local DB is independent, encrypted
+/// with its own device-local key), but matching the constant keeps the two implementations easy
+/// to reason about side by side.
+const PBKDF2_ITERATIONS: u32 = 210_000;
+
+/// Holds the single native SQLite connection for the app's lifetime, guarded by a mutex so
+/// concurrent `invoke()` calls from the frontend can't race on the same handle. Mirrors the single
+/// shared `Database` the browser's dedicated Worker owns in `db/worker/sqliteWorker.ts`.
+#[derive(Default)]
+pub struct DbState(pub Mutex<Option<Connection>>);
+
+impl DbState {
+    pub fn with_connection<T>(
+        &self,
+        f: impl FnOnce(&Connection) -> Result<T, String>,
+    ) -> Result<T, String> {
+        let guard = self.0.lock().map_err(to_sql_error)?;
+        let conn = guard.as_ref().ok_or("Database not open")?;
+        f(conn)
+    }
+}
+
+fn json_to_sql_value(value: &JsonValue) -> SqlValue {
+    match value {
+        JsonValue::Null => SqlValue::Null,
+        JsonValue::Bool(b) => SqlValue::Integer(i64::from(*b)),
+        JsonValue::Number(n) => {
+            if let Some(i) = n.as_i64() {
+                SqlValue::Integer(i)
+            } else if let Some(f) = n.as_f64() {
+                SqlValue::Real(f)
+            } else {
+                SqlValue::Null
+            }
+        }
+        JsonValue::String(s) => SqlValue::Text(s.clone()),
+        // The JS `LocalDb` contract never binds arrays/objects as params; fall back to their JSON
+        // text defensively rather than failing the whole call.
+        other => SqlValue::Text(other.to_string()),
+    }
+}
+
+fn value_ref_to_json(value: ValueRef) -> JsonValue {
+    match value {
+        ValueRef::Null => JsonValue::Null,
+        ValueRef::Integer(i) => JsonValue::from(i),
+        ValueRef::Real(f) => JsonValue::from(f),
+        ValueRef::Text(t) => JsonValue::String(String::from_utf8_lossy(t).into_owned()),
+        ValueRef::Blob(b) => JsonValue::String(base64::engine::general_purpose::STANDARD.encode(b)),
+    }
+}
+
+fn to_sql_error(err: impl std::fmt::Display) -> String {
+    err.to_string()
+}
+
+/// Opens (creating if needed) `<app data dir>/<filename>` and stores the connection in managed
+/// state. `filename` is validated by `path_safety::sanitize_db_filename` before being joined onto
+/// the OS-resolved app-data directory (D3, SEC-06) - without it, a JS-supplied `filename` such as
+/// `"../../../../evil.db"` or an absolute/drive path could open a file outside that directory
+/// (`PathBuf::join` neither canonicalizes `..` nor rejects an absolute second component).
+#[tauri::command]
+pub fn db_open(app: AppHandle, state: State<DbState>, filename: String) -> Result<(), String> {
+    crate::path_safety::sanitize_db_filename(&filename)?;
+
+    let dir = app.path().app_data_dir().map_err(to_sql_error)?;
+    std::fs::create_dir_all(&dir).map_err(to_sql_error)?;
+
+    // V7.3f rename shim: if this is a pre-rename tester's first launch on the renamed build, the
+    // new-identifier app-data dir is empty but the old `com.spndr.app` sibling still holds their
+    // `spndr.sqlite3`. Copy it into place (once) so their history doesn't look like it vanished.
+    if let Some(legacy_dir) = legacy_app_data_dir(&dir) {
+        copy_legacy_db_if_missing(&dir, &legacy_dir, &filename).map_err(to_sql_error)?;
+    }
+
+    let path = dir.join(&filename);
+
+    // SEC-40: the store is encrypted with SQLCipher, keyed by a device-local random key from the
+    // OS credential store (never a user PIN — SEC-41). A `KEYCHAIN_UNAVAILABLE`-tagged error here
+    // aborts the open rather than falling back to plaintext.
+    let key_hex = crate::db_key::get_or_create_db_key()?;
+
+    // One-time upgrade: a store created before S30 is plaintext on disk. Re-encrypt it in place
+    // before we open it under the key.
+    migrate_plaintext_store(&path, &key_hex)?;
+
+    let conn = Connection::open(&path).map_err(to_sql_error)?;
+    apply_page_key(&conn, &key_hex)?;
+    conn.execute_batch("PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;")
+        .map_err(to_sql_error)?;
+    // SQLCipher only reports a wrong/half-applied key on first access — force one now so an
+    // unreadable file surfaces here (→ frontend recovery gate) instead of on the first real query.
+    conn.query_row("SELECT count(*) FROM sqlite_master", [], |row| row.get::<_, i64>(0))
+        .map_err(|_| {
+            "the local database could not be opened with this device's key (it may be corrupted)"
+                .to_string()
+        })?;
+
+    *state.0.lock().map_err(to_sql_error)? = Some(conn);
+    Ok(())
+}
+
+/// Applies a SQLCipher raw page key (`x'<hex>'`, so SQLCipher skips its own KDF). Shared by
+/// `db_open` and the migration's verification read.
+fn apply_page_key(conn: &Connection, key_hex: &str) -> Result<(), String> {
+    conn.execute_batch(&format!("PRAGMA key = \"x'{key_hex}'\";"))
+        .map_err(to_sql_error)
+}
+
+/// The 16-byte header every plaintext SQLite file begins with. A SQLCipher-encrypted database's
+/// first page — header included — is ciphertext, so it will not start with this.
+const SQLITE_PLAINTEXT_MAGIC: &[u8; 16] = b"SQLite format 3\0";
+
+/// True when `path` exists and its first 16 bytes are the plaintext SQLite header. A missing file,
+/// or one shorter than the header, is not plaintext (nothing to migrate).
+fn file_starts_with_plaintext_magic(path: &Path) -> std::io::Result<bool> {
+    let mut file = match std::fs::File::open(path) {
+        Ok(file) => file,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(false),
+        Err(e) => return Err(e),
+    };
+    let mut head = [0u8; 16];
+    match file.read_exact(&mut head) {
+        Ok(()) => Ok(&head == SQLITE_PLAINTEXT_MAGIC),
+        Err(e) if e.kind() == std::io::ErrorKind::UnexpectedEof => Ok(false),
+        Err(e) => Err(e),
+    }
+}
+
+fn sidecar(path: &Path, suffix: &str) -> std::path::PathBuf {
+    let name = path.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
+    path.with_file_name(format!("{name}{suffix}"))
+}
+
+/// SEC-40 upgrade path. A store written before S30 is a plaintext SQLite file; re-encrypt it
+/// exactly once:
+///
+/// 1. checkpoint the WAL back into the main file so `sqlcipher_export` sees every committed page;
+/// 2. `ATTACH` a fresh keyed sidecar and `SELECT sqlcipher_export()` the whole database into it;
+/// 3. verify the sidecar opens and reads under the key;
+/// 4. atomically rename it over the original and drop the stale `-wal`/`-shm`.
+///
+/// An interrupted run leaves the plaintext original untouched and a `.reencrypting` temp behind,
+/// which the next launch deletes before retrying — the plaintext file is only removed by the
+/// rename in step 4, after step 3 has proved the replacement good.
+fn migrate_plaintext_store(path: &Path, key_hex: &str) -> Result<(), String> {
+    if !file_starts_with_plaintext_magic(path).map_err(to_sql_error)? {
+        return Ok(());
+    }
+
+    let tmp = sidecar(path, ".reencrypting");
+    let _ = std::fs::remove_file(&tmp);
+
+    {
+        let conn = Connection::open(path).map_err(to_sql_error)?;
+        conn.execute_batch("PRAGMA journal_mode = DELETE;")
+            .map_err(to_sql_error)?;
+
+        let tmp_literal = tmp.to_string_lossy().replace('\'', "''");
+        conn.execute_batch(&format!(
+            "ATTACH DATABASE '{tmp_literal}' AS encrypted KEY \"x'{key_hex}'\";
+             SELECT sqlcipher_export('encrypted');
+             DETACH DATABASE encrypted;"
+        ))
+        .map_err(|e| format!("re-encrypting the local database failed: {e}"))?;
+    }
+
+    {
+        let check = Connection::open(&tmp).map_err(to_sql_error)?;
+        apply_page_key(&check, key_hex)?;
+        check
+            .query_row("SELECT count(*) FROM sqlite_master", [], |row| row.get::<_, i64>(0))
+            .map_err(|_| {
+                let _ = std::fs::remove_file(&tmp);
+                "the re-encrypted local database failed its verification read".to_string()
+            })?;
+    }
+
+    std::fs::rename(&tmp, path).map_err(to_sql_error)?;
+    let _ = std::fs::remove_file(sidecar(path, "-wal"));
+    let _ = std::fs::remove_file(sidecar(path, "-shm"));
+    Ok(())
+}
+
+/// True once the connection's database holds at least one application table (anything not in the
+/// `sqlite_*` reserved namespace). BUG-31: `PRAGMA key` only *initialises* encryption on a fresh
+/// database — run against an already-populated plaintext file it leaves the file half-plaintext /
+/// half-ciphertext and permanently unreadable (SQLCipher needs `PRAGMA rekey`, or an
+/// `sqlcipher_export` copy, to encrypt data in place). `db_open` runs schema migrations before the
+/// frontend ever calls `db_set_key`, so in the current architecture there is no safe moment to
+/// apply a key this way; this guard makes `db_set_key` fail loudly instead of silently corrupting
+/// the local store. Pure + `Connection`-only so it's unit-testable without a Tauri app context.
+fn database_has_application_tables(conn: &Connection) -> rusqlite::Result<bool> {
+    let count: i64 = conn.query_row(
+        "SELECT count(*) FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'",
+        [],
+        |row| row.get(0),
+    )?;
+    Ok(count > 0)
+}
+
+/// Derives a 256-bit SQLCipher page key from the PIN via PBKDF2-HMAC-SHA256 and applies it with
+/// `PRAGMA key`, using SQLCipher's raw-key syntax (`x'<hex>'`) so the already-derived key isn't
+/// run through SQLCipher's own internal KDF a second time. A cheap read afterwards is the standard
+/// way to confirm the key was actually correct — SQLCipher only reports a bad key on first access.
+///
+/// BUG-31: refuses up front when the database already contains application data — applying a key
+/// with a bare `PRAGMA key` at that point corrupts the file. The PIN feature stays dormant
+/// (`VITE_LOCAL_PIN` unset) until the key is applied at `db_open` on a DB encrypted from creation.
+#[tauri::command]
+pub fn db_set_key(state: State<DbState>, passphrase: String, salt: Vec<u8>) -> Result<(), String> {
+    let guard = state.0.lock().map_err(to_sql_error)?;
+    let conn = guard.as_ref().ok_or("Database not open")?;
+
+    if database_has_application_tables(conn).map_err(to_sql_error)? {
+        return Err(
+            "Cannot enable encryption on an existing local database: a page key applied after data \
+             exists corrupts the file. This build does not support setting a PIN on an already-\
+             created local store (BUG-31)."
+                .to_string(),
+        );
+    }
+
+    let mut key = [0u8; 32];
+    pbkdf2::<Hmac<Sha256>>(passphrase.as_bytes(), &salt, PBKDF2_ITERATIONS, &mut key)
+        .map_err(to_sql_error)?;
+    let hex_key: String = key.iter().map(|b| format!("{b:02x}")).collect();
+
+    conn.execute_batch(&format!("PRAGMA key = \"x'{hex_key}'\";"))
+        .map_err(to_sql_error)?;
+    conn.query_row("SELECT count(*) FROM sqlite_master", [], |row| row.get::<_, i64>(0))
+        .map_err(|_| "Incorrect PIN, or the local database is corrupted".to_string())?;
+    Ok(())
+}
+
+/// Single statement + params -> `execute`; no params -> `execute_batch`, so a multi-statement
+/// migration script (no bind params, one `tx.exec(rawSql)` call) still runs as one call, matching
+/// `SqliteWasmDriver`/`MemorySqliteDriver`'s `exec()` semantics.
+#[tauri::command]
+pub fn db_exec(state: State<DbState>, sql: String, params: Vec<JsonValue>) -> Result<(), String> {
+    let guard = state.0.lock().map_err(to_sql_error)?;
+    let conn = guard.as_ref().ok_or("Database not open")?;
+
+    if params.is_empty() {
+        conn.execute_batch(&sql).map_err(to_sql_error)?;
+    } else {
+        let bind: Vec<SqlValue> = params.iter().map(json_to_sql_value).collect();
+        let bind_refs: Vec<&dyn ToSql> = bind.iter().map(|v| v as &dyn ToSql).collect();
+        conn.execute(&sql, bind_refs.as_slice()).map_err(to_sql_error)?;
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub fn db_select(
+    state: State<DbState>,
+    sql: String,
+    params: Vec<JsonValue>,
+) -> Result<Vec<HashMap<String, JsonValue>>, String> {
+    let guard = state.0.lock().map_err(to_sql_error)?;
+    let conn = guard.as_ref().ok_or("Database not open")?;
+
+    let mut stmt = conn.prepare(&sql).map_err(to_sql_error)?;
+    let column_names: Vec<String> = stmt.column_names().iter().map(|s| s.to_string()).collect();
+    let bind: Vec<SqlValue> = params.iter().map(json_to_sql_value).collect();
+    let bind_refs: Vec<&dyn ToSql> = bind.iter().map(|v| v as &dyn ToSql).collect();
+
+    let rows = stmt
+        .query_map(bind_refs.as_slice(), |row| {
+            let mut map = HashMap::with_capacity(column_names.len());
+            for (i, name) in column_names.iter().enumerate() {
+                map.insert(name.clone(), value_ref_to_json(row.get_ref(i)?));
+            }
+            Ok(map)
+        })
+        .map_err(to_sql_error)?;
+
+    rows.collect::<Result<Vec<_>, _>>().map_err(to_sql_error)
+}
+
+/// Dropping the `Connection` (via replacing it with `None`) closes the native handle.
+#[tauri::command]
+pub fn db_close(state: State<DbState>) -> Result<(), String> {
+    *state.0.lock().map_err(to_sql_error)? = None;
+    Ok(())
+}
+
+/// Removes `<filename>`, `<filename>-wal` and `<filename>-shm` from `dir`, treating a missing file
+/// as success. Pure + `Path`-only so it's unit-testable against a temp directory without a Tauri
+/// app context. A partially-deleted set on a mid-loop error is still an improvement over the
+/// corrupt file it replaces — `db_reset_file`'s caller recreates the DB from an absent/partial
+/// path either way.
+fn remove_local_db_files(dir: &std::path::Path, filename: &str) -> std::io::Result<()> {
+    for suffix in ["", "-wal", "-shm"] {
+        let path = dir.join(format!("{filename}{suffix}"));
+        match std::fs::remove_file(&path) {
+            Ok(()) => {}
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+            Err(e) => return Err(e),
+        }
+    }
+    Ok(())
+}
+
+/// BUG-30 recovery: closes the live connection and deletes the local database file plus its
+/// WAL/SHM sidecars, so an unreadable store (e.g. the half-plaintext/half-ciphertext state a
+/// mistimed `PRAGMA key` left behind under BUG-31, or ordinary on-disk corruption) can be rebuilt
+/// from empty and re-seeded from `/sync/bootstrap`. The server is authoritative for synced data,
+/// so this only loses changes made offline and never pushed. `filename` is validated exactly as
+/// `db_open` validates it (SEC-06).
+#[tauri::command]
+pub fn db_reset_file(app: AppHandle, state: State<DbState>, filename: String) -> Result<(), String> {
+    crate::path_safety::sanitize_db_filename(&filename)?;
+
+    // Drop the handle before unlinking so Windows (which locks open files) can remove it.
+    *state.0.lock().map_err(to_sql_error)? = None;
+
+    let dir = app.path().app_data_dir().map_err(to_sql_error)?;
+    remove_local_db_files(&dir, &filename).map_err(to_sql_error)?;
+    Ok(())
+}
+
+// V7.1 acceptance spec / V7.3f rename shim: Tauri legacy-data-dir copy.
+//
+// The Tauri `identifier` renamed from `com.spndr.app` to `com.corvale.app` (`tauri.conf.json`),
+// which repoints `app.path().app_data_dir()` to a brand-new, empty directory on every platform -
+// `app_data_dir()` is always `<platform base>/<identifier>`, so a changed identifier is a changed
+// directory, full stop. Without mitigation, every desktop tester's existing local database looks
+// like it vanished the moment they upgrade, which is indistinguishable from real data loss to
+// someone who hasn't read a changelog. `db_open` calls `copy_legacy_db_if_missing` before opening
+// the connection: if the new-identifier directory has no database yet, but the old-identifier
+// sibling directory still has `spndr.sqlite3`, copy it into place under the new filename first.
+// The legacy file and directory are left untouched either way - this is a copy, never a move, so a
+// rollback or a second device profile can't lose data to it.
+//
+// These two helpers are pure (no `AppHandle`, no Tauri runtime) specifically so they're testable
+// with plain `std::fs` against a temp directory, without spinning up a Tauri app context.
+
+/// The pre-rename Tauri identifier. `app_data_dir()` always ends in the current identifier as its
+/// final path component, so swapping that component for this one names the sibling directory the
+/// pre-rename build wrote to.
+const LEGACY_APP_IDENTIFIER: &str = "com.spndr.app";
+
+/// The pre-rename local SQLite filename (`TauriSqlDriver`/`SqliteWasmDriver` defaulted to this).
+const LEGACY_DB_FILENAME: &str = "spndr.sqlite3";
+
+/// Given the current (new-identifier) app-data dir, returns its sibling dir named after the old
+/// identifier, or `None` when the path has no parent.
+fn legacy_app_data_dir(new_app_data_dir: &std::path::Path) -> Option<std::path::PathBuf> {
+    new_app_data_dir
+        .parent()
+        .map(|parent| parent.join(LEGACY_APP_IDENTIFIER))
+}
+
+/// If `new_dir/filename` doesn't exist yet but `legacy_dir/spndr.sqlite3` does, copies the legacy
+/// file into place under the new name and returns `true`. Never overwrites an existing
+/// new-identifier database, and returns `false` (not an error) when there's nothing to migrate.
+/// Always a copy, never a move, so a rollback or a second device profile can't lose data to it.
+fn copy_legacy_db_if_missing(
+    new_dir: &std::path::Path,
+    legacy_dir: &std::path::Path,
+    filename: &str,
+) -> std::io::Result<bool> {
+    let new_path = new_dir.join(filename);
+    if new_path.exists() {
+        return Ok(false);
+    }
+    let legacy_path = legacy_dir.join(LEGACY_DB_FILENAME);
+    if !legacy_path.exists() {
+        return Ok(false);
+    }
+    std::fs::create_dir_all(new_dir)?;
+    std::fs::copy(&legacy_path, &new_path)?;
+    Ok(true)
+}
+
+#[cfg(test)]
+mod db_set_key_guard_tests {
+    use rusqlite::Connection;
+
+    /// BUG-31: `db_set_key` must refuse to apply a page key once the database holds application
+    /// data — a bare `PRAGMA key` at that point corrupts the file. The guard keys off whether any
+    /// non-`sqlite_*` table exists.
+    #[test]
+    fn reports_no_application_tables_for_a_fresh_database() {
+        let conn = Connection::open_in_memory().unwrap();
+        assert!(!super::database_has_application_tables(&conn).unwrap());
+    }
+
+    #[test]
+    fn reports_application_tables_once_a_user_table_is_created() {
+        let conn = Connection::open_in_memory().unwrap();
+        conn.execute_batch("CREATE TABLE transactions (id TEXT PRIMARY KEY, data TEXT);")
+            .unwrap();
+        assert!(super::database_has_application_tables(&conn).unwrap());
+    }
+
+    #[test]
+    fn ignores_sqlite_internal_tables() {
+        let conn = Connection::open_in_memory().unwrap();
+        // An AUTOINCREMENT column makes SQLite create the internal `sqlite_sequence` table; the
+        // guard must not treat that reserved-namespace table as application data.
+        conn.execute_batch("CREATE TABLE t (id INTEGER PRIMARY KEY AUTOINCREMENT);")
+            .unwrap();
+        conn.execute_batch("INSERT INTO t DEFAULT VALUES;").unwrap();
+        conn.execute_batch("DROP TABLE t;").unwrap();
+        assert!(!super::database_has_application_tables(&conn).unwrap());
+    }
+}
+
+#[cfg(test)]
+mod encryption_migration_tests {
+    use rusqlite::Connection;
+    use std::path::PathBuf;
+
+    /// 64 hex chars — a fixed key is fine for tests; production keys come from the OS keychain.
+    const TEST_KEY: &str = "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff0";
+
+    struct TempDir(PathBuf);
+
+    impl TempDir {
+        fn new(label: &str) -> Self {
+            let path = std::env::temp_dir().join(format!(
+                "corvale-enc-test-{label}-{}-{}",
+                std::process::id(),
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_nanos()
+            ));
+            std::fs::create_dir_all(&path).unwrap();
+            TempDir(path)
+        }
+        fn db(&self) -> PathBuf {
+            self.0.join("corvale.sqlite3")
+        }
+    }
+
+    impl Drop for TempDir {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+
+    fn write_plaintext_db_with_rows(path: &std::path::Path) {
+        let conn = Connection::open(path).unwrap();
+        conn.execute_batch(
+            "CREATE TABLE t (id INTEGER PRIMARY KEY, v TEXT);
+             INSERT INTO t (v) VALUES ('alpha'), ('beta'), ('gamma');",
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn magic_detection_distinguishes_plaintext_from_absent_or_short() {
+        let dir = TempDir::new("magic");
+        let missing = dir.0.join("nope.sqlite3");
+        assert!(!super::file_starts_with_plaintext_magic(&missing).unwrap());
+
+        let short = dir.0.join("short.bin");
+        std::fs::write(&short, b"SQLite").unwrap();
+        assert!(!super::file_starts_with_plaintext_magic(&short).unwrap());
+
+        let plain = dir.db();
+        write_plaintext_db_with_rows(&plain);
+        assert!(super::file_starts_with_plaintext_magic(&plain).unwrap());
+    }
+
+    #[test]
+    fn migrates_a_populated_plaintext_store_to_an_encrypted_one_in_place() {
+        let dir = TempDir::new("roundtrip");
+        let path = dir.db();
+        write_plaintext_db_with_rows(&path);
+        assert!(super::file_starts_with_plaintext_magic(&path).unwrap());
+
+        super::migrate_plaintext_store(&path, TEST_KEY).unwrap();
+
+        // On disk it is no longer a plaintext SQLite file...
+        assert!(!super::file_starts_with_plaintext_magic(&path).unwrap());
+
+        // ...a keyless open cannot read it...
+        let plainless = Connection::open(&path).unwrap();
+        assert!(plainless.query_row("SELECT count(*) FROM t", [], |r| r.get::<_, i64>(0)).is_err());
+
+        // ...and every row survives when opened under the key.
+        let keyed = Connection::open(&path).unwrap();
+        super::apply_page_key(&keyed, TEST_KEY).unwrap();
+        let rows: Vec<String> = keyed
+            .prepare("SELECT v FROM t ORDER BY id")
+            .unwrap()
+            .query_map([], |r| r.get::<_, String>(0))
+            .unwrap()
+            .collect::<Result<_, _>>()
+            .unwrap();
+        assert_eq!(rows, vec!["alpha", "beta", "gamma"]);
+    }
+
+    #[test]
+    fn is_a_no_op_on_an_already_encrypted_store() {
+        let dir = TempDir::new("idempotent");
+        let path = dir.db();
+        write_plaintext_db_with_rows(&path);
+        super::migrate_plaintext_store(&path, TEST_KEY).unwrap();
+        let after_first = std::fs::read(&path).unwrap();
+
+        // Second call sees no plaintext magic and returns without touching the file.
+        super::migrate_plaintext_store(&path, TEST_KEY).unwrap();
+        assert_eq!(std::fs::read(&path).unwrap(), after_first);
+    }
+
+    #[test]
+    fn is_a_no_op_when_no_store_exists_yet() {
+        let dir = TempDir::new("fresh");
+        assert!(super::migrate_plaintext_store(&dir.db(), TEST_KEY).is_ok());
+        assert!(!dir.db().exists());
+    }
+}
+
+#[cfg(test)]
+mod db_reset_file_tests {
+    use std::path::PathBuf;
+
+    struct TempDir(PathBuf);
+
+    impl TempDir {
+        fn new(label: &str) -> Self {
+            let path = std::env::temp_dir().join(format!(
+                "corvale-reset-test-{label}-{}-{}",
+                std::process::id(),
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_nanos()
+            ));
+            std::fs::create_dir_all(&path).unwrap();
+            TempDir(path)
+        }
+    }
+
+    impl Drop for TempDir {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+
+    #[test]
+    fn removes_the_database_file_and_both_sidecars() {
+        let dir = TempDir::new("all-three");
+        for name in ["corvale.sqlite3", "corvale.sqlite3-wal", "corvale.sqlite3-shm"] {
+            std::fs::write(dir.0.join(name), b"x").unwrap();
+        }
+
+        super::remove_local_db_files(&dir.0, "corvale.sqlite3").unwrap();
+
+        for name in ["corvale.sqlite3", "corvale.sqlite3-wal", "corvale.sqlite3-shm"] {
+            assert!(!dir.0.join(name).exists(), "{name} should be gone");
+        }
+    }
+
+    #[test]
+    fn is_ok_when_the_sidecars_are_absent() {
+        let dir = TempDir::new("main-only");
+        std::fs::write(dir.0.join("corvale.sqlite3"), b"x").unwrap();
+
+        super::remove_local_db_files(&dir.0, "corvale.sqlite3").unwrap();
+
+        assert!(!dir.0.join("corvale.sqlite3").exists());
+    }
+
+    #[test]
+    fn is_a_no_op_when_nothing_exists() {
+        let dir = TempDir::new("nothing");
+        assert!(super::remove_local_db_files(&dir.0, "corvale.sqlite3").is_ok());
+    }
+}
+
+#[cfg(test)]
+mod legacy_data_dir_tests {
+    use std::path::{Path, PathBuf};
+
+    /// Computes the legacy (pre-rename) app-data directory from the new one. Tauri's
+    /// `app_data_dir()` always ends in the identifier as its final path component on every
+    /// platform (`%APPDATA%\<identifier>`, `~/Library/Application Support/<identifier>`,
+    /// `~/.local/share/<identifier>`), so swapping that final component for the old identifier
+    /// finds the sibling directory the pre-rename build wrote to.
+    fn legacy_app_data_dir(new_app_data_dir: &Path) -> Option<PathBuf> {
+        super::legacy_app_data_dir(new_app_data_dir)
+    }
+
+    /// If `new_dir/filename` doesn't exist yet but `legacy_dir/spndr.sqlite3` does, copies the
+    /// legacy file into place and returns `true`. Never overwrites an existing new-identifier
+    /// database (a second, later launch must not clobber data written since the first migration),
+    /// and returns `false` (not an error) when there's nothing to migrate.
+    fn copy_legacy_db_if_missing(new_dir: &Path, legacy_dir: &Path, filename: &str) -> std::io::Result<bool> {
+        super::copy_legacy_db_if_missing(new_dir, legacy_dir, filename)
+    }
+
+    struct TempDir(PathBuf);
+
+    impl TempDir {
+        fn new(label: &str) -> Self {
+            let path = std::env::temp_dir().join(format!(
+                "corvale-rename-test-{label}-{}-{}",
+                std::process::id(),
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_nanos()
+            ));
+            std::fs::create_dir_all(&path).unwrap();
+            TempDir(path)
+        }
+    }
+
+    impl Drop for TempDir {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+
+    #[test]
+    fn legacy_dir_is_the_new_dirs_sibling_named_after_the_old_identifier() {
+        let base = TempDir::new("sibling");
+        let new_dir = base.0.join("com.corvale.app");
+
+        let legacy = legacy_app_data_dir(&new_dir).expect("new_dir has a parent");
+
+        assert_eq!(legacy, base.0.join("com.spndr.app"));
+    }
+
+    #[test]
+    fn copies_the_legacy_db_when_the_new_dir_has_none_yet() {
+        let base = TempDir::new("copy");
+        let new_dir = base.0.join("com.corvale.app");
+        let legacy_dir = base.0.join("com.spndr.app");
+        std::fs::create_dir_all(&legacy_dir).unwrap();
+        std::fs::write(legacy_dir.join("spndr.sqlite3"), b"legacy-db-bytes").unwrap();
+
+        let copied = copy_legacy_db_if_missing(&new_dir, &legacy_dir, "corvale.sqlite3").unwrap();
+
+        assert!(copied);
+        let migrated = std::fs::read(new_dir.join("corvale.sqlite3")).unwrap();
+        assert_eq!(migrated, b"legacy-db-bytes");
+        // The legacy file is left in place - this is a copy, not a move.
+        assert!(legacy_dir.join("spndr.sqlite3").exists());
+    }
+
+    #[test]
+    fn does_not_overwrite_an_existing_new_identifier_database() {
+        let base = TempDir::new("no-clobber");
+        let new_dir = base.0.join("com.corvale.app");
+        let legacy_dir = base.0.join("com.spndr.app");
+        std::fs::create_dir_all(&new_dir).unwrap();
+        std::fs::create_dir_all(&legacy_dir).unwrap();
+        std::fs::write(new_dir.join("corvale.sqlite3"), b"current-db-bytes").unwrap();
+        std::fs::write(legacy_dir.join("spndr.sqlite3"), b"legacy-db-bytes").unwrap();
+
+        let copied = copy_legacy_db_if_missing(&new_dir, &legacy_dir, "corvale.sqlite3").unwrap();
+
+        assert!(!copied);
+        let untouched = std::fs::read(new_dir.join("corvale.sqlite3")).unwrap();
+        assert_eq!(untouched, b"current-db-bytes");
+    }
+
+    #[test]
+    fn is_a_no_op_when_no_legacy_database_exists() {
+        let base = TempDir::new("nothing-to-migrate");
+        let new_dir = base.0.join("com.corvale.app");
+        let legacy_dir = base.0.join("com.spndr.app");
+        std::fs::create_dir_all(&legacy_dir).unwrap();
+        // legacy_dir exists but has no spndr.sqlite3 in it (e.g. a fresh install, never
+        // installed pre-rename, or the legacy identifier's dir belongs to an unrelated app).
+
+        let copied = copy_legacy_db_if_missing(&new_dir, &legacy_dir, "corvale.sqlite3").unwrap();
+
+        assert!(!copied);
+        assert!(!new_dir.join("corvale.sqlite3").exists());
+    }
+
+    #[test]
+    fn is_a_no_op_when_the_legacy_directory_does_not_exist_at_all() {
+        let base = TempDir::new("no-legacy-dir");
+        let new_dir = base.0.join("com.corvale.app");
+        let legacy_dir = base.0.join("com.spndr.app");
+        // Deliberately not created - simulates a user who never had the pre-rename app installed.
+
+        let copied = copy_legacy_db_if_missing(&new_dir, &legacy_dir, "corvale.sqlite3").unwrap();
+
+        assert!(!copied);
+    }
+}
