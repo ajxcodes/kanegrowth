@@ -137,15 +137,15 @@ const App = () => {
                     toastOptions={{
                         className: 'text-sm',
                         style: {
-                            background: '#2e2a40',
-                            color: '#f8f6ff',
-                            border: '1px solid #3d3654',
+                            background: '#223530',
+                            color: '#f5f1e4',
+                            border: '1px solid #334c42',
                         },
                         success: {
-                            iconTheme: { primary: '#a855f7', secondary: '#14121c' },
+                            iconTheme: { primary: '#d4af37', secondary: '#0e1512' },
                         },
                         error: {
-                            iconTheme: { primary: '#fb7185', secondary: '#14121c' },
+                            iconTheme: { primary: '#fb7185', secondary: '#0e1512' },
                         },
                     }}
                 />

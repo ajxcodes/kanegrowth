@@ -669,7 +669,7 @@ const SavingsGoals = () => {
                                                             type="button"
                                                             onClick={() => void handleAutoContribute(goal)}
                                                             disabled={autoContributing || actionsBlocked}
-                                                            className="p-1.5 text-fg-muted hover:text-violet-400 transition-colors disabled:opacity-50"
+                                                            className="p-1.5 text-fg-muted hover:text-accent transition-colors disabled:opacity-50"
                                                             aria-label="Process auto contribution"
                                                             title={actionsBlocked ? 'Requires an internet connection' : 'Process auto contribution'}
                                                         >

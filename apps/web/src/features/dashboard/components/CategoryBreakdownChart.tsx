@@ -55,7 +55,7 @@ const CategoryBreakdownChart: React.FC<CategoryBreakdownChartProps> = ({ data })
                             paddingAngle={2}
                         >
                             {chartData.map((entry) => (
-                                <Cell key={entry.name} fill={entry.color} stroke="#14121c" strokeWidth={2} />
+                                <Cell key={entry.name} fill={entry.color} stroke="#0e1512" strokeWidth={2} />
                             ))}
                         </Pie>
                         <Tooltip

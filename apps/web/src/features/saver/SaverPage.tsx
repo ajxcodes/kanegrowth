@@ -135,7 +135,7 @@ const Saver = () => {
                             </div>
                             <div className="card border-accent/20 bg-accent-subtle">
                                 <p className="text-xs text-fg-muted uppercase tracking-wide">Net worth</p>
-                                <p className="text-3xl font-semibold text-violet-300 mt-2">
+                                <p className="text-3xl font-semibold text-accent mt-2">
                                     {formatCurrency(balances.netWorth)}
                                 </p>
                                 <p className="text-xs text-fg-muted mt-2">

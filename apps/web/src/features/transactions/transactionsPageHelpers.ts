@@ -56,7 +56,7 @@ export const transactionUserLabel = (type: TransactionType, name: string): strin
 export const amountColor = (type: TransactionType): string => {
     if (type === 'income') return 'text-accent'
     if (type === 'expense') return 'text-expense'
-    return 'text-violet-400'
+    return 'text-text-secondary'
 }
 
 /** Transfer legs carry no sign of their own (`type` is `'transfer'` for both the outbound and

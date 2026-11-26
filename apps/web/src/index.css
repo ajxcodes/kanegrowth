@@ -26,39 +26,39 @@
 }
 
 @theme {
-    /* ── Page & surfaces (purple-tinted, slightly brighter than pure black) ── */
-    --color-page: #14121c;
-    --color-bg-secondary: #1c1928;
-    --color-elevated: #252236;
-    --color-elevated-hover: #2c2840;
-    --color-surface-2: #2e2a40;
-    --color-surface-3: #38324c;
+    /* ── Page & surfaces (evergreen/charcoal, slightly brighter than pure black) ── */
+    --color-page: #0e1512;
+    --color-bg-secondary: #121c18;
+    --color-elevated: #17241f;
+    --color-elevated-hover: #1d2d27;
+    --color-surface-2: #223530;
+    --color-surface-3: #2a423a;
 
     /* ── Borders ── */
-    --color-border: #3d3654;
-    --color-border-subtle: #2e2940;
-    --color-border-hover: #4a4260;
+    --color-border: #334c42;
+    --color-border-subtle: #24382f;
+    --color-border-hover: #476457;
 
     /* ── Text ── */
-    --color-text-primary: #f8f6ff;
-    --color-text-secondary: #c8c0dc;
-    --color-text-muted: #9a92b0;
-    --color-text-muted-bright: #b0a9c4;
-    --color-text-quiet: #756e8a;
+    --color-text-primary: #f5f1e4;
+    --color-text-secondary: #c9c3ae;
+    --color-text-muted: #9c9583;
+    --color-text-muted-bright: #b6af9b;
+    --color-text-quiet: #8f8875;
 
-    /* ── Accent (violet → lavender gradient) ── */
-    --color-accent-start: #9333ea;
-    --color-accent-end: #c084fc;
-    --color-accent: #a855f7;
-    --color-accent-hover: #b975f9;
-    --color-accent-subtle: #a855f722;
-    --color-accent-dim: #c4b5fd;
-    --color-accent-glow: #a855f748;
+    /* ── Accent (gold gradient) ── */
+    --color-accent-start: #f3d98b;
+    --color-accent-end: #c79a2b;
+    --color-accent: #d4af37;
+    --color-accent-hover: #e5c458;
+    --color-accent-subtle: #d4af3722;
+    --color-accent-dim: #f3d98b;
+    --color-accent-glow: #d4af3748;
 
     /* ── Semantic ── */
     --color-positive: #4ade80;
     --color-negative: #fb7185;
-    --color-warning: #fbbf24;
+    --color-warning: #f59e0b;
     --color-destructive: #f05555;
 
     /* Stat card tints */
@@ -66,8 +66,8 @@
     --color-positive-border: #4ade8055;
     --color-negative-subtle: #fb71851f;
     --color-negative-border: #fb718555;
-    --color-accent-card-subtle: #a855f724;
-    --color-accent-card-border: #a855f760;
+    --color-accent-card-subtle: #d4af3724;
+    --color-accent-card-border: #d4af3760;
 
     /* ── Typography ── */
     --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
@@ -93,7 +93,7 @@
     --color-expense: var(--color-negative);
     --color-success: var(--color-positive);
     --color-danger: var(--color-destructive);
-    --color-on-accent: #faf5ff;
+    --color-on-accent: #16130a;
     --color-base: var(--color-page);
 }
 
@@ -105,43 +105,50 @@
         /* Scrollbar tokens - deliberately NOT in the --color-* namespace:
            Tailwind v4 generates utilities from --color-*, so --color-scrollbar-thumb
            would emit dead `bg-scrollbar-thumb` classes. (V8) */
-        --scrollbar-thumb: #3d3654;
-        --scrollbar-thumb-hover: #4a4260;
+        --scrollbar-thumb: #334c42;
+        --scrollbar-thumb-hover: #476457;
         --scrollbar-track: transparent;
     }
 
     :root[data-theme="light"] {
         color-scheme: light;
 
-        --color-page: #f8f7fc;
+        --color-page: #f7f5ec;
         --color-bg-secondary: #ffffff;
         --color-elevated: #ffffff;
-        --color-elevated-hover: #f3f0fa;
-        --color-surface-2: #ede9f7;
-        --color-surface-3: #e2dcf2;
+        --color-elevated-hover: #f1eee1;
+        --color-surface-2: #eae6d7;
+        --color-surface-3: #ded8c4;
 
-        --color-border: #d5cde8;
-        --color-border-subtle: #e7e2f3;
-        --color-border-hover: #b8abd6;
+        --color-border: #d6cfb8;
+        --color-border-subtle: #e6e1d0;
+        --color-border-hover: #b9b098;
 
-        --color-text-primary: #1a1626;
-        --color-text-secondary: #3f3856;
-        --color-text-muted: #625a7a;
-        --color-text-muted-bright: #4e4766;
-        --color-text-quiet: #7a7294;
+        --color-text-primary: #14201a;
+        --color-text-secondary: #34463c;
+        --color-text-muted: #5c6c62;
+        --color-text-muted-bright: #47584e;
+        --color-text-quiet: #63706a;
 
-        --color-accent: #7c3aed;
-        --color-accent-hover: #6d28d9;
-        --color-accent-subtle: #7c3aed18;
-        --color-accent-dim: #6d28d9;
+        --color-accent-start: #8a6a12;
+        --color-accent-end: #6e5309;
+        --color-accent: #7a5c0e;
+        --color-accent-hover: #6e5309;
+        --color-accent-subtle: #7a5c0e18;
+        --color-accent-dim: #6e5309;
+        --color-accent-glow: #7a5c0e30;
 
         --color-positive: #15803d;
         --color-negative: #be123c;
         --color-warning: #b45309;
         --color-destructive: #dc2626;
 
-        --scrollbar-thumb: #c4badb;
-        --scrollbar-thumb-hover: #a799c7;
+        --color-on-accent: #fff9e8;
+        --color-accent-card-subtle: #7a5c0e1f;
+        --color-accent-card-border: #7a5c0e55;
+
+        --scrollbar-thumb: #cbbf9f;
+        --scrollbar-thumb-hover: #b3a583;
         --scrollbar-track: transparent;
     }
 
@@ -196,9 +203,9 @@
         @apply bg-page text-text-primary antialiased font-body;
         overflow-x: hidden;
         background-image:
-            radial-gradient(ellipse 80% 50% at 50% -20%, #9333ea12 0%, transparent 55%),
-            radial-gradient(ellipse 55% 40% at 100% 100%, #c084fc0a 0%, transparent 45%),
-            radial-gradient(ellipse 40% 30% at 0% 60%, #7c3aed08 0%, transparent 40%);
+            radial-gradient(ellipse 80% 50% at 50% -20%, color-mix(in srgb, var(--color-accent) 8%, transparent) 0%, transparent 55%),
+            radial-gradient(ellipse 55% 40% at 100% 100%, color-mix(in srgb, var(--color-positive) 6%, transparent) 0%, transparent 45%),
+            radial-gradient(ellipse 40% 30% at 0% 60%, color-mix(in srgb, var(--color-positive) 4%, transparent) 0%, transparent 40%);
     }
 
     ::selection {
@@ -314,7 +321,7 @@
     }
 
     .btn-primary:hover:not(:disabled) {
-        background: linear-gradient(135deg, var(--color-accent-hover) 0%, #d8b4fe 100%);
+        background: linear-gradient(135deg, var(--color-accent-hover) 0%, var(--color-accent-start) 100%);
         box-shadow: 0 6px 28px color-mix(in srgb, var(--color-accent) 45%, transparent);
     }
 
@@ -324,7 +331,7 @@
     }
 
     .btn-accent:hover:not(:disabled) {
-        background: linear-gradient(135deg, var(--color-accent-hover) 0%, #d8b4fe 100%);
+        background: linear-gradient(135deg, var(--color-accent-hover) 0%, var(--color-accent-start) 100%);
     }
 
     .btn-secondary {
@@ -358,7 +365,7 @@
         text-wrap: balance;
     }
 
-    /* Nav active state with purple glow */
+    /* Nav active state with gold glow */
     .nav-active {
         @apply text-accent border;
         background: color-mix(in srgb, var(--color-accent) 14%, var(--color-elevated));
@@ -366,17 +373,15 @@
         box-shadow: inset 0 0 20px color-mix(in srgb, var(--color-accent) 8%, transparent);
     }
 
-    /* Signature: ledger pulse with violet accent */
+    /* Signature: ledger pulse with gold accent */
     .ledger-pulse-glow {
         background: linear-gradient(
             90deg,
             transparent 0%,
-            #a855f700 20%,
             var(--color-accent) 50%,
-            #a855f700 80%,
             transparent 100%
         );
-        box-shadow: 0 0 12px 2px #a855f760;
+        box-shadow: 0 0 12px 2px color-mix(in srgb, var(--color-accent) 38%, transparent);
         animation: ledger-pulse-travel 4s ease-in-out infinite;
     }
 
@@ -408,12 +413,12 @@
 
     .landing-glow {
         background:
-            radial-gradient(circle at 25% 35%, #9333ea14 0%, transparent 50%),
-            radial-gradient(circle at 75% 65%, #c084fc0c 0%, transparent 45%);
+            radial-gradient(circle at 25% 35%, color-mix(in srgb, var(--color-accent) 8%, transparent) 0%, transparent 50%),
+            radial-gradient(circle at 75% 65%, color-mix(in srgb, var(--color-positive) 5%, transparent) 0%, transparent 45%);
     }
 
     .landing-hero-glow {
-        background: radial-gradient(ellipse 60% 50% at 50% 0%, #a855f718 0%, transparent 70%);
+        background: radial-gradient(ellipse 60% 50% at 50% 0%, color-mix(in srgb, var(--color-accent) 9%, transparent) 0%, transparent 70%);
     }
 
     /* ── Stat cards (dashboard / reports) ── */

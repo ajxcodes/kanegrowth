@@ -114,7 +114,7 @@ const Pushover = () => {
                                         {formatDisplayDateTime(item.pushoverDate)}
                                     </p>
                                 </div>
-                                <p className="text-sm font-semibold text-violet-400">
+                                <p className="text-sm font-semibold text-accent">
                                     {formatCurrency(item.pushoverAmount)}
                                 </p>
                             </div>

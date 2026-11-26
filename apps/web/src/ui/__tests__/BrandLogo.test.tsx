@@ -3,8 +3,8 @@ import { render, screen, cleanup, act, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import BrandLogo from '../BrandLogo'
 
-const DARK = '/icons/kanegrowth_logo_bonsai_dark_transparent.png'
-const LIGHT = '/icons/kanegrowth_logo_bonsai_transparent.png'
+const DARK = '/icons/kanegrowth_logo_gold_green_transparent.png'
+const LIGHT = '/icons/kanegrowth_logo_gold_green_transparent.png'
 
 const renderLogo = (props: React.ComponentProps<typeof BrandLogo> = {}) =>
     render(
@@ -20,7 +20,10 @@ describe('BrandLogo', () => {
         localStorage.clear()
     })
 
-    it('renders theme-aware KaneGrowth bonsai icon and wordmark across dark/light themes, sizes, tagline, and links', async () => {
+    it('renders the single gold/green KaneGrowth mark for both themes across sizes, tagline, and links', async () => {
+        expect(DARK).toBe('/icons/kanegrowth_logo_gold_green_transparent.png')
+        expect(LIGHT).toBe('/icons/kanegrowth_logo_gold_green_transparent.png')
+
         document.documentElement.setAttribute('data-theme', 'dark')
         const { unmount } = renderLogo({ size: 'sm', showTagline: true, linkTo: '/dashboard' })
         const img = screen.getByAltText('KaneGrowth logo')

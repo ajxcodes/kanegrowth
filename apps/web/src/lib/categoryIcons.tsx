@@ -70,7 +70,7 @@ export const DEFAULT_CATEGORY_COLORS = [
     '#22C55E',
     '#06B6D4',
     '#3B82F6',
-    '#A855F7',
+    '#84CC16',
     '#EC4899',
     '#6B7280',
 ]

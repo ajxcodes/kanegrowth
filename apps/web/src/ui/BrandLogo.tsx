@@ -27,8 +27,8 @@ const iconSizeClasses = {
 } as const
 
 const LOGO_SRC_BY_THEME: Record<AppTheme, string> = {
-    light: '/icons/kanegrowth_logo_bonsai_transparent.png',
-    dark: '/icons/kanegrowth_logo_bonsai_dark_transparent.png',
+    light: '/icons/kanegrowth_logo_gold_green_transparent.png',
+    dark: '/icons/kanegrowth_logo_gold_green_transparent.png',
 }
 
 const BrandLogo: React.FC<BrandLogoProps> = ({

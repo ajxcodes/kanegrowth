@@ -19,12 +19,12 @@ interface CashFlowSankeyChartProps {
 
 const NODE_COLORS: Record<SankeyNodeKind, string> = {
   income: '#4ade80',
-  pool: '#a855f7',
+  pool: '#d4af37',
   expense: '#fb7185',
   sinking_fund: '#38bdf8',
   savings: '#34d399',
   transfer: '#fbbf24',
-  surplus: '#818cf8',
+  surplus: '#a3e635',
   deficit: '#f97316',
 }
 

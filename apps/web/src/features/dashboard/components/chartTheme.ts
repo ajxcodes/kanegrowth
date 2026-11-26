@@ -5,41 +5,41 @@ import { formatCurrency, getCurrencySymbol } from '@lib/format'
 export const CHART_COLORS = {
     income: '#4ade80',
     expense: '#fb7185',
-    net: '#a855f7',
-    grid: '#3d3654',
-    axis: '#9a92b0',
-    tooltipBg: '#2e2a40',
-    tooltipBorder: '#3d3654',
-    tooltipLabel: '#c8c0dc',
-    tooltipValue: '#f8f6ff',
+    net: '#d4af37',
+    grid: '#334c42',
+    axis: '#9c9583',
+    tooltipBg: '#223530',
+    tooltipBorder: '#334c42',
+    tooltipLabel: '#c9c3ae',
+    tooltipValue: '#f5f1e4',
 } as const
 
 export const LIGHT_CHART_COLORS = {
     income: '#15803d',
     expense: '#be123c',
-    net: '#7c3aed',
-    grid: '#d5cde8',
-    axis: '#4e4766',
+    net: '#8a6a12',
+    grid: '#d6cfb8',
+    axis: '#47584e',
     tooltipBg: '#ffffff',
-    tooltipBorder: '#d5cde8',
-    tooltipLabel: '#3f3856',
-    tooltipValue: '#1a1626',
+    tooltipBorder: '#d6cfb8',
+    tooltipLabel: '#34463c',
+    tooltipValue: '#14201a',
 } as const
 
 export const getThemeChartColors = (theme: 'dark' | 'light') =>
     theme === 'light' ? LIGHT_CHART_COLORS : CHART_COLORS
 
 export const CHART_CATEGORY_COLORS = [
-    '#9333ea',
-    '#c084fc',
-    '#a855f7',
+    '#d4af37',
     '#4ade80',
-    '#fb7185',
-    '#fbbf24',
-    '#7c3aed',
-    '#d8b4fe',
     '#34d399',
-    '#fb923c',
+    '#a3e635',
+    '#fbbf24',
+    '#fb7185',
+    '#38bdf8',
+    '#f97316',
+    '#e5c458',
+    '#22c55e',
 ]
 
 export const chartMargin = { top: 8, right: 12, left: 0, bottom: 0 }
