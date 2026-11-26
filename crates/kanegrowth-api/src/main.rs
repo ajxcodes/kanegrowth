@@ -15,7 +15,7 @@ use crate::db::Db;
 use crate::models::*;
 use axum::{
     extract::{Path, Query, State},
-    http::{HeaderMap, StatusCode},
+    http::{header, HeaderMap, HeaderValue, StatusCode},
     response::Json,
     routing::{get, post},
     Router,
@@ -88,11 +88,68 @@ async fn health() -> Json<serde_json::Value> {
     Json(serde_json::json!({"status":"ok"}))
 }
 
+// --- refresh-token cookie helpers (web session persistence, PD-2) ---
+const REFRESH_COOKIE: &str = "kg_refresh";
+const REFRESH_COOKIE_PATH: &str = "/api/v1/auth";
+
+fn is_secure_request(headers: &HeaderMap) -> bool {
+    headers
+        .get("x-forwarded-proto")
+        .and_then(|v| v.to_str().ok())
+        .map(|v| v.eq_ignore_ascii_case("https"))
+        .unwrap_or(false)
+}
+
+fn build_refresh_cookie(token: &str, max_age_secs: i64, secure: bool) -> String {
+    let mut c = format!(
+        "{}={}; HttpOnly; Path={}; SameSite=Lax; Max-Age={}",
+        REFRESH_COOKIE, token, REFRESH_COOKIE_PATH, max_age_secs
+    );
+    if secure {
+        c.push_str("; Secure");
+    }
+    c
+}
+
+fn clear_refresh_cookie(secure: bool) -> String {
+    let mut c = format!(
+        "{}=; HttpOnly; Path={}; SameSite=Lax; Max-Age=0",
+        REFRESH_COOKIE, REFRESH_COOKIE_PATH
+    );
+    if secure {
+        c.push_str("; Secure");
+    }
+    c
+}
+
+fn refresh_token_from_cookie(headers: &HeaderMap) -> Option<String> {
+    let raw = headers.get(header::COOKIE)?.to_str().ok()?;
+    let prefix = format!("{}=", REFRESH_COOKIE);
+    for part in raw.split(';') {
+        let part = part.trim();
+        if let Some(val) = part.strip_prefix(&prefix) {
+            if !val.is_empty() {
+                return Some(val.to_string());
+            }
+        }
+    }
+    None
+}
+
+fn set_cookie_headers(cookie: String) -> HeaderMap {
+    let mut headers = HeaderMap::new();
+    if let Ok(v) = HeaderValue::from_str(&cookie) {
+        headers.insert(header::SET_COOKIE, v);
+    }
+    headers
+}
+
 // --- auth handlers ---
 async fn auth_register(
     State(state): State<AppState>,
+    headers: HeaderMap,
     Json(body): Json<RegisterRequest>,
-) -> Result<Json<ApiResponse<AuthData>>, (StatusCode, Json<serde_json::Value>)> {
+) -> Result<(HeaderMap, Json<ApiResponse<AuthData>>), (StatusCode, Json<serde_json::Value>)> {
     match crate::auth::register_user(
         &state.db,
         &state.config,
@@ -100,7 +157,14 @@ async fn auth_register(
         &body.password,
         body.full_name,
     ) {
-        Ok(data) => Ok(Json(ApiResponse::data(data))),
+        Ok(data) => {
+            let cookie = build_refresh_cookie(
+                &data.refresh_token,
+                state.config.refresh_ttl_days * 86_400,
+                is_secure_request(&headers),
+            );
+            Ok((set_cookie_headers(cookie), Json(ApiResponse::data(data))))
+        }
         Err(e) => Err((
             StatusCode::BAD_REQUEST,
             Json(serde_json::json!({"error": e})),
@@ -110,10 +174,18 @@ async fn auth_register(
 
 async fn auth_login(
     State(state): State<AppState>,
+    headers: HeaderMap,
     Json(body): Json<LoginRequest>,
-) -> Result<Json<ApiResponse<AuthData>>, (StatusCode, Json<serde_json::Value>)> {
+) -> Result<(HeaderMap, Json<ApiResponse<AuthData>>), (StatusCode, Json<serde_json::Value>)> {
     match crate::auth::login_user(&state.db, &state.config, &body.email, &body.password) {
-        Ok(data) => Ok(Json(ApiResponse::data(data))),
+        Ok(data) => {
+            let cookie = build_refresh_cookie(
+                &data.refresh_token,
+                state.config.refresh_ttl_days * 86_400,
+                is_secure_request(&headers),
+            );
+            Ok((set_cookie_headers(cookie), Json(ApiResponse::data(data))))
+        }
         Err(_) => Err((
             StatusCode::UNAUTHORIZED,
             Json(serde_json::json!({"error":"invalid credentials"})),
@@ -123,9 +195,15 @@ async fn auth_login(
 
 async fn auth_refresh(
     State(state): State<AppState>,
+    headers: HeaderMap,
     Json(body): Json<RefreshRequest>,
-) -> Result<Json<ApiResponse<AuthData>>, (StatusCode, Json<serde_json::Value>)> {
-    let rt = body.refresh_token.clone().unwrap_or_default();
+) -> Result<(HeaderMap, Json<ApiResponse<AuthData>>), (StatusCode, Json<serde_json::Value>)> {
+    let rt = body
+        .refresh_token
+        .clone()
+        .filter(|t| !t.is_empty())
+        .or_else(|| refresh_token_from_cookie(&headers))
+        .unwrap_or_default();
     if rt.is_empty() {
         return Err((
             StatusCode::BAD_REQUEST,
@@ -133,7 +211,14 @@ async fn auth_refresh(
         ));
     }
     match crate::auth::refresh_access(&state.db, &state.config, &rt) {
-        Ok(data) => Ok(Json(ApiResponse::data(data))),
+        Ok(data) => {
+            let cookie = build_refresh_cookie(
+                &data.refresh_token,
+                state.config.refresh_ttl_days * 86_400,
+                is_secure_request(&headers),
+            );
+            Ok((set_cookie_headers(cookie), Json(ApiResponse::data(data))))
+        }
         Err(_) => Err((
             StatusCode::UNAUTHORIZED,
             Json(serde_json::json!({"error":"invalid refresh token"})),
@@ -143,12 +228,23 @@ async fn auth_refresh(
 
 async fn auth_logout(
     State(state): State<AppState>,
+    headers: HeaderMap,
     Json(body): Json<RefreshRequest>,
-) -> Result<Json<ApiResponse<serde_json::Value>>, (StatusCode, Json<serde_json::Value>)> {
-    if let Some(rt) = &body.refresh_token {
+) -> Result<(HeaderMap, Json<ApiResponse<serde_json::Value>>), (StatusCode, Json<serde_json::Value>)>
+{
+    let rt = body
+        .refresh_token
+        .clone()
+        .filter(|t| !t.is_empty())
+        .or_else(|| refresh_token_from_cookie(&headers));
+    if let Some(rt) = &rt {
         let _ = crate::auth::revoke_refresh(&state.db, rt);
     }
-    Ok(Json(ApiResponse::data(serde_json::json!({"ok": true}))))
+    let cookie = clear_refresh_cookie(is_secure_request(&headers));
+    Ok((
+        set_cookie_headers(cookie),
+        Json(ApiResponse::data(serde_json::json!({"ok": true}))),
+    ))
 }
 
 async fn auth_logout_all(
