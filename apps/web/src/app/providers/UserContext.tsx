@@ -95,7 +95,7 @@ const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             // Desktop sends its keychain-held refresh token so the server can revoke it
             // (SEC-11 / BUG-24); on the web this is null and the cookie is revoked instead.
             const refreshToken = await getStoredRefreshToken()
-            await axiosInstance.post(API_PATHS.AUTH.LOGOUT, refreshToken ? { refreshToken } : undefined)
+            await axiosInstance.post(API_PATHS.AUTH.LOGOUT, refreshToken ? { refreshToken } : {})
         } catch {
             // Clear local session even if the server call fails (e.g. offline)
         }
