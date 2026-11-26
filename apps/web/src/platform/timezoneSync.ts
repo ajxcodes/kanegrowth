@@ -20,7 +20,7 @@ import type { ApiResponse, User } from '@lib/types/api'
  *    toast about.
  */
 
-const SESSION_FLAG_KEY = 'corvale:timezone-synced'
+const SESSION_FLAG_KEY = 'kanegrowth:timezone-synced'
 
 /** The IANA zone the browser is currently in, or `null` if it can't be read / isn't valid. */
 export const detectTimezone = (): string | null => {

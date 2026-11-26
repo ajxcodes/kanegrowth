@@ -69,7 +69,7 @@ const ProfileSettings: React.FC = () => {
                         {user.timezone ?? 'UTC'}
                     </p>
                     <p className="mt-1.5 text-xs text-text-quiet">
-                        Detected automatically from your device. Corvale updates this when your device&rsquo;s
+                        Detected automatically from your device. KaneGrowth updates this when your device&rsquo;s
                         timezone changes, so your dates and reminders stay correct.
                     </p>
                 </div>

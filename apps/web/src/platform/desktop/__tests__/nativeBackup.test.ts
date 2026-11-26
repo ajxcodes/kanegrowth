@@ -17,10 +17,10 @@ describe('nativeBackup', () => {
   it('base64-encodes a string body and invokes save_file', async () => {
     invokeMock.mockResolvedValueOnce(true)
 
-    const result = await saveFileNative('corvale-report-2026-01.csv', 'date,amount\n2026-01-01,10')
+    const result = await saveFileNative('kanegrowth-report-2026-01.csv', 'date,amount\n2026-01-01,10')
 
     expect(invokeMock).toHaveBeenCalledWith('save_file', {
-      filename: 'corvale-report-2026-01.csv',
+      filename: 'kanegrowth-report-2026-01.csv',
       contentsBase64: b64('date,amount\n2026-01-01,10'),
     })
     expect(result).toBe(true)

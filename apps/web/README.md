@@ -1,3 +1,3 @@
-# Corvale frontend
+# KaneGrowth frontend
 
-React + Vite + TypeScript dashboard for the Corvale personal finance app.
+React + Vite + TypeScript dashboard for the KaneGrowth personal finance app.

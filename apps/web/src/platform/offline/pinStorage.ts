@@ -11,12 +11,12 @@ import { getLocalDb } from '../db/localDbInstance'
  * driver actually holding that key (`isLocalDbUnlocked`), not a storage flag.
  */
 
-const PIN_SALT_KEY = 'corvale_pin_salt'
-const PIN_VERIFIER_KEY = 'corvale_pin_verifier'
-const PIN_ATTEMPTS_KEY = 'corvale_pin_attempts'
+const PIN_SALT_KEY = 'kanegrowth_pin_salt'
+const PIN_VERIFIER_KEY = 'kanegrowth_pin_verifier'
+const PIN_ATTEMPTS_KEY = 'kanegrowth_pin_attempts'
 
 // V7.3e rename-compat: pre-rename builds wrote these under `spndr_pin_*`. `migrateLegacyPinKeys`
-// copies them forward once, so a PIN set up before the Corvale rename keeps working without the
+// copies them forward once, so a PIN set up before the KaneGrowth rename keeps working without the
 // user re-entering it. Unlike the KDF context literals below, these are only key *names* — no
 // cryptographic material — so renaming them is safe as long as the copy-forward runs first.
 const LEGACY_PIN_SALT_KEY = 'spndr_pin_salt'
@@ -27,11 +27,11 @@ export const MIN_PIN_LENGTH = 4
 const MAX_ATTEMPTS = 5
 
 /** Fires whenever the local encryption key is cleared while a PIN is configured, so a mounted `PinGate` can re-lock without a full reload. */
-export const LOCAL_DB_LOCKED_EVENT = 'corvale:local-db-locked'
+export const LOCAL_DB_LOCKED_EVENT = 'kanegrowth:local-db-locked'
 
 /**
  * One-time, idempotent copy-forward of the pre-rename `spndr_pin_*` localStorage keys to their
- * `corvale_pin_*` names (V7.3e). Runs at boot (`db/bootstrapLocalDb.ts`) before anything reads
+ * `kanegrowth_pin_*` names (V7.3e). Runs at boot (`db/bootstrapLocalDb.ts`) before anything reads
  * `hasPinConfigured`. A bare rename would strand every existing PIN — the encrypted local DB
  * would look PIN-less rather than merely renamed. Never overwrites a value already present under
  * the new name; a no-op on a fresh install. See ROADMAP's V7 compat matrix.
@@ -53,7 +53,7 @@ export const migrateLegacyPinKeys = (): void => {
 }
 
 /**
- * Removes every PIN-related `localStorage` key, under **both** the current `corvale_pin_*` names
+ * Removes every PIN-related `localStorage` key, under **both** the current `kanegrowth_pin_*` names
  * and the pre-rename `spndr_pin_*` ones. Called from `bootstrapLocalDb` on a build where
  * local-first is disabled (the web build - `VITE_LOCAL_FIRST=false`).
  *

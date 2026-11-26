@@ -5,7 +5,7 @@ import { isTauriRuntime } from './isTauri'
  * Persistence for the desktop client's refresh token (SEC-11 / BUG-24).
  *
  * The packaged Tauri app runs at `tauri://localhost` / `http://tauri.localhost`, which is
- * cross-site to `api.corvale.app`, so the `SameSite=Lax` refresh cookie is never sent back and
+ * cross-site to `api.kanegrowth.app`, so the `SameSite=Lax` refresh cookie is never sent back and
  * the cookie-only refresh path logs the user out at the access-token TTL. Instead the desktop
  * client receives the rotated refresh token in the auth response body and holds it here, in the
  * OS keychain (Windows Credential Manager / macOS Keychain / Linux Secret Service) via the Rust

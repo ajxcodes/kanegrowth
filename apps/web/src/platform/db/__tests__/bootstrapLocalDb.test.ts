@@ -52,18 +52,18 @@ describe('bootstrapLocalDb', () => {
 
   it('purges orphaned PIN keys (both name sets) when local-first is disabled (V6)', async () => {
     vi.mocked(isLocalFirstEnabled).mockReturnValue(false)
-    localStorage.setItem('corvale_pin_salt', 'salt')
-    localStorage.setItem('corvale_pin_verifier', 'verifier')
-    localStorage.setItem('corvale_pin_attempts', '3')
+    localStorage.setItem('kanegrowth_pin_salt', 'salt')
+    localStorage.setItem('kanegrowth_pin_verifier', 'verifier')
+    localStorage.setItem('kanegrowth_pin_attempts', '3')
     localStorage.setItem('spndr_pin_salt', 'legacy-salt')
     localStorage.setItem('spndr_pin_verifier', 'legacy-verifier')
 
     await bootstrapLocalDb()
 
     for (const key of [
-      'corvale_pin_salt',
-      'corvale_pin_verifier',
-      'corvale_pin_attempts',
+      'kanegrowth_pin_salt',
+      'kanegrowth_pin_verifier',
+      'kanegrowth_pin_attempts',
       'spndr_pin_salt',
       'spndr_pin_verifier',
     ]) {
@@ -76,14 +76,14 @@ describe('bootstrapLocalDb', () => {
     vi.mocked(isLocalPinEnabled).mockReturnValue(false)
     vi.mocked(isTauriRuntime).mockReturnValue(false)
     wasmCreate.mockResolvedValue(fakeDb())
-    localStorage.setItem('corvale_pin_salt', 'salt')
-    localStorage.setItem('corvale_pin_verifier', 'verifier')
+    localStorage.setItem('kanegrowth_pin_salt', 'salt')
+    localStorage.setItem('kanegrowth_pin_verifier', 'verifier')
     localStorage.setItem('spndr_pin_verifier', 'legacy-verifier')
 
     await bootstrapLocalDb()
 
-    expect(localStorage.getItem('corvale_pin_verifier')).toBeNull()
-    expect(localStorage.getItem('corvale_pin_salt')).toBeNull()
+    expect(localStorage.getItem('kanegrowth_pin_verifier')).toBeNull()
+    expect(localStorage.getItem('kanegrowth_pin_salt')).toBeNull()
     expect(localStorage.getItem('spndr_pin_verifier')).toBeNull()
   })
 
@@ -92,11 +92,11 @@ describe('bootstrapLocalDb', () => {
     vi.mocked(isLocalPinEnabled).mockReturnValue(true)
     vi.mocked(isTauriRuntime).mockReturnValue(false)
     wasmCreate.mockResolvedValue(fakeDb())
-    localStorage.setItem('corvale_pin_verifier', 'verifier')
+    localStorage.setItem('kanegrowth_pin_verifier', 'verifier')
 
     await bootstrapLocalDb()
 
-    expect(localStorage.getItem('corvale_pin_verifier')).toBe('verifier')
+    expect(localStorage.getItem('kanegrowth_pin_verifier')).toBe('verifier')
   })
 
   it('copies pre-rename PIN keys forward when the PIN feature is on', async () => {
@@ -109,7 +109,7 @@ describe('bootstrapLocalDb', () => {
 
     await bootstrapLocalDb()
 
-    expect(localStorage.getItem('corvale_pin_verifier')).toBe('legacy-verifier')
+    expect(localStorage.getItem('kanegrowth_pin_verifier')).toBe('legacy-verifier')
     expect(localStorage.getItem('spndr_pin_verifier')).toBeNull()
   })
 

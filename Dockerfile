@@ -18,6 +18,10 @@ ENV VITE_LOCAL_FIRST=$VITE_LOCAL_FIRST \
 RUN npm --prefix apps/web run build:standalone
 
 FROM nginxinc/nginx-unprivileged:1.27-alpine AS runtime
+LABEL org.opencontainers.image.title="KaneGrowth Web UI" \
+      org.opencontainers.image.description="KaneGrowth — Building wealth from good habits at home." \
+      org.opencontainers.image.source="https://github.com/ajxcodes/kanegrowth" \
+      org.opencontainers.image.licenses="AGPL-3.0-or-later"
 USER root
 COPY --from=build /app/dist/frontend /usr/share/nginx/html
 COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf

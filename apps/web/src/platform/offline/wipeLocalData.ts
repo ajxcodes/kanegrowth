@@ -30,7 +30,7 @@ export const wipeLocalData = async (): Promise<WipeResult> => {
     const pinCleared = hasAnyPinMaterial()
     setCachedUser(null)
     clearOfflineGrant()
-    // Clears both the current `corvale_pin_*` and pre-rename `spndr_pin_*` verifier/salt/attempts
+    // Clears both the current `kanegrowth_pin_*` and pre-rename `spndr_pin_*` verifier/salt/attempts
     // keys - a plain `clearPin()` would leave a legacy-named verifier behind on a device that
     // hasn't run `migrateLegacyPinKeys` yet.
     purgeLocalPinKeys()

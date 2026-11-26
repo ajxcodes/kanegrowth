@@ -14,7 +14,7 @@ use keyring::{Entry, Error as KeyringError};
 
 /// Credential-store service name. Matches the bundle identifier and the `keychain.rs` refresh-token
 /// service so both entries sit together in Credential Manager / Keychain Access.
-const SERVICE: &str = "com.corvale.app";
+const SERVICE: &str = "com.kanegrowth.app";
 
 /// Fixed entry name for the one secret this module owns. Not caller-supplied — like the
 /// refresh-token `keychain_{set,get,delete}` IPC commands (SEC-42), nothing in the webview can
@@ -57,7 +57,7 @@ pub fn get_or_create_db_key() -> Result<String, String> {
         Ok(existing) if is_valid_key_hex(&existing) => Ok(existing),
         Ok(_) => Err(
             "the local database key stored in the OS keychain is malformed; delete the \
-             'com.corvale.app / local-db-key' entry and rebuild local data"
+             'com.kanegrowth.app / local-db-key' entry and rebuild local data"
                 .to_string(),
         ),
         Err(KeyringError::NoEntry) => {

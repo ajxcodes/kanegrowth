@@ -1,33 +1,18 @@
 import React, { useEffect, useState } from 'react'
 import { FiMoon, FiSun } from 'react-icons/fi'
+import { applyTheme, resolveCurrentTheme, type AppTheme } from '@lib/theme'
 
-const THEME_STORAGE_KEY = 'kanegrowth_theme'
-
-export type AppTheme = 'dark' | 'light'
-
-const getInitialTheme = (): AppTheme => {
-  if (typeof window === 'undefined') return 'dark'
-  const attr = document.documentElement.getAttribute('data-theme')
-  if (attr === 'light' || attr === 'dark') return attr
-  const stored = window.localStorage.getItem(THEME_STORAGE_KEY)
-  if (stored === 'light' || stored === 'dark') return stored
-  return 'dark'
-}
+export type { AppTheme }
 
 interface ThemeToggleProps {
   onThemeChange?: (theme: AppTheme) => void
 }
 
 const ThemeToggle: React.FC<ThemeToggleProps> = ({ onThemeChange }) => {
-  const [theme, setTheme] = useState<AppTheme>(getInitialTheme)
+  const [theme, setTheme] = useState<AppTheme>(resolveCurrentTheme)
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
-    try {
-      window.localStorage.setItem(THEME_STORAGE_KEY, theme)
-    } catch {
-      // Ignore restricted storage
-    }
+    applyTheme(theme)
     onThemeChange?.(theme)
   }, [theme, onThemeChange])
 

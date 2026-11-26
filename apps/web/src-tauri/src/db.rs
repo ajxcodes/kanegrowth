@@ -11,7 +11,7 @@ use std::path::Path;
 use std::sync::Mutex;
 use tauri::{AppHandle, Manager, State};
 
-/// Matches `frontend/corvale/src/db/encryption/deriveKey.ts`'s PBKDF2 iteration count. Exact
+/// Matches `apps/web/src/platform/db/encryption/deriveKey.ts`'s PBKDF2 iteration count. Exact
 /// cross-platform key parity isn't required (each device's local DB is independent, encrypted
 /// with its own device-local key), but matching the constant keeps the two implementations easy
 /// to reason about side by side.
@@ -336,7 +336,7 @@ pub fn db_reset_file(app: AppHandle, state: State<DbState>, filename: String) ->
 
 // V7.1 acceptance spec / V7.3f rename shim: Tauri legacy-data-dir copy.
 //
-// The Tauri `identifier` renamed from `com.spndr.app` to `com.corvale.app` (`tauri.conf.json`),
+// The Tauri `identifier` renamed from `com.spndr.app` to `com.kanegrowth.app` (`tauri.conf.json`),
 // which repoints `app.path().app_data_dir()` to a brand-new, empty directory on every platform -
 // `app_data_dir()` is always `<platform base>/<identifier>`, so a changed identifier is a changed
 // directory, full stop. Without mitigation, every desktop tester's existing local database looks
@@ -435,7 +435,7 @@ mod encryption_migration_tests {
     impl TempDir {
         fn new(label: &str) -> Self {
             let path = std::env::temp_dir().join(format!(
-                "corvale-enc-test-{label}-{}-{}",
+                "kanegrowth-enc-test-{label}-{}-{}",
                 std::process::id(),
                 std::time::SystemTime::now()
                     .duration_since(std::time::UNIX_EPOCH)
@@ -446,7 +446,7 @@ mod encryption_migration_tests {
             TempDir(path)
         }
         fn db(&self) -> PathBuf {
-            self.0.join("corvale.sqlite3")
+            self.0.join("kanegrowth.sqlite3")
         }
     }
 
@@ -539,7 +539,7 @@ mod db_reset_file_tests {
     impl TempDir {
         fn new(label: &str) -> Self {
             let path = std::env::temp_dir().join(format!(
-                "corvale-reset-test-{label}-{}-{}",
+                "kanegrowth-reset-test-{label}-{}-{}",
                 std::process::id(),
                 std::time::SystemTime::now()
                     .duration_since(std::time::UNIX_EPOCH)
@@ -560,13 +560,13 @@ mod db_reset_file_tests {
     #[test]
     fn removes_the_database_file_and_both_sidecars() {
         let dir = TempDir::new("all-three");
-        for name in ["corvale.sqlite3", "corvale.sqlite3-wal", "corvale.sqlite3-shm"] {
+        for name in ["kanegrowth.sqlite3", "kanegrowth.sqlite3-wal", "kanegrowth.sqlite3-shm"] {
             std::fs::write(dir.0.join(name), b"x").unwrap();
         }
 
-        super::remove_local_db_files(&dir.0, "corvale.sqlite3").unwrap();
+        super::remove_local_db_files(&dir.0, "kanegrowth.sqlite3").unwrap();
 
-        for name in ["corvale.sqlite3", "corvale.sqlite3-wal", "corvale.sqlite3-shm"] {
+        for name in ["kanegrowth.sqlite3", "kanegrowth.sqlite3-wal", "kanegrowth.sqlite3-shm"] {
             assert!(!dir.0.join(name).exists(), "{name} should be gone");
         }
     }
@@ -574,17 +574,17 @@ mod db_reset_file_tests {
     #[test]
     fn is_ok_when_the_sidecars_are_absent() {
         let dir = TempDir::new("main-only");
-        std::fs::write(dir.0.join("corvale.sqlite3"), b"x").unwrap();
+        std::fs::write(dir.0.join("kanegrowth.sqlite3"), b"x").unwrap();
 
-        super::remove_local_db_files(&dir.0, "corvale.sqlite3").unwrap();
+        super::remove_local_db_files(&dir.0, "kanegrowth.sqlite3").unwrap();
 
-        assert!(!dir.0.join("corvale.sqlite3").exists());
+        assert!(!dir.0.join("kanegrowth.sqlite3").exists());
     }
 
     #[test]
     fn is_a_no_op_when_nothing_exists() {
         let dir = TempDir::new("nothing");
-        assert!(super::remove_local_db_files(&dir.0, "corvale.sqlite3").is_ok());
+        assert!(super::remove_local_db_files(&dir.0, "kanegrowth.sqlite3").is_ok());
     }
 }
 
@@ -614,7 +614,7 @@ mod legacy_data_dir_tests {
     impl TempDir {
         fn new(label: &str) -> Self {
             let path = std::env::temp_dir().join(format!(
-                "corvale-rename-test-{label}-{}-{}",
+                "kanegrowth-rename-test-{label}-{}-{}",
                 std::process::id(),
                 std::time::SystemTime::now()
                     .duration_since(std::time::UNIX_EPOCH)
@@ -635,7 +635,7 @@ mod legacy_data_dir_tests {
     #[test]
     fn legacy_dir_is_the_new_dirs_sibling_named_after_the_old_identifier() {
         let base = TempDir::new("sibling");
-        let new_dir = base.0.join("com.corvale.app");
+        let new_dir = base.0.join("com.kanegrowth.app");
 
         let legacy = legacy_app_data_dir(&new_dir).expect("new_dir has a parent");
 
@@ -645,15 +645,15 @@ mod legacy_data_dir_tests {
     #[test]
     fn copies_the_legacy_db_when_the_new_dir_has_none_yet() {
         let base = TempDir::new("copy");
-        let new_dir = base.0.join("com.corvale.app");
+        let new_dir = base.0.join("com.kanegrowth.app");
         let legacy_dir = base.0.join("com.spndr.app");
         std::fs::create_dir_all(&legacy_dir).unwrap();
         std::fs::write(legacy_dir.join("spndr.sqlite3"), b"legacy-db-bytes").unwrap();
 
-        let copied = copy_legacy_db_if_missing(&new_dir, &legacy_dir, "corvale.sqlite3").unwrap();
+        let copied = copy_legacy_db_if_missing(&new_dir, &legacy_dir, "kanegrowth.sqlite3").unwrap();
 
         assert!(copied);
-        let migrated = std::fs::read(new_dir.join("corvale.sqlite3")).unwrap();
+        let migrated = std::fs::read(new_dir.join("kanegrowth.sqlite3")).unwrap();
         assert_eq!(migrated, b"legacy-db-bytes");
         // The legacy file is left in place - this is a copy, not a move.
         assert!(legacy_dir.join("spndr.sqlite3").exists());
@@ -662,43 +662,43 @@ mod legacy_data_dir_tests {
     #[test]
     fn does_not_overwrite_an_existing_new_identifier_database() {
         let base = TempDir::new("no-clobber");
-        let new_dir = base.0.join("com.corvale.app");
+        let new_dir = base.0.join("com.kanegrowth.app");
         let legacy_dir = base.0.join("com.spndr.app");
         std::fs::create_dir_all(&new_dir).unwrap();
         std::fs::create_dir_all(&legacy_dir).unwrap();
-        std::fs::write(new_dir.join("corvale.sqlite3"), b"current-db-bytes").unwrap();
+        std::fs::write(new_dir.join("kanegrowth.sqlite3"), b"current-db-bytes").unwrap();
         std::fs::write(legacy_dir.join("spndr.sqlite3"), b"legacy-db-bytes").unwrap();
 
-        let copied = copy_legacy_db_if_missing(&new_dir, &legacy_dir, "corvale.sqlite3").unwrap();
+        let copied = copy_legacy_db_if_missing(&new_dir, &legacy_dir, "kanegrowth.sqlite3").unwrap();
 
         assert!(!copied);
-        let untouched = std::fs::read(new_dir.join("corvale.sqlite3")).unwrap();
+        let untouched = std::fs::read(new_dir.join("kanegrowth.sqlite3")).unwrap();
         assert_eq!(untouched, b"current-db-bytes");
     }
 
     #[test]
     fn is_a_no_op_when_no_legacy_database_exists() {
         let base = TempDir::new("nothing-to-migrate");
-        let new_dir = base.0.join("com.corvale.app");
+        let new_dir = base.0.join("com.kanegrowth.app");
         let legacy_dir = base.0.join("com.spndr.app");
         std::fs::create_dir_all(&legacy_dir).unwrap();
         // legacy_dir exists but has no spndr.sqlite3 in it (e.g. a fresh install, never
         // installed pre-rename, or the legacy identifier's dir belongs to an unrelated app).
 
-        let copied = copy_legacy_db_if_missing(&new_dir, &legacy_dir, "corvale.sqlite3").unwrap();
+        let copied = copy_legacy_db_if_missing(&new_dir, &legacy_dir, "kanegrowth.sqlite3").unwrap();
 
         assert!(!copied);
-        assert!(!new_dir.join("corvale.sqlite3").exists());
+        assert!(!new_dir.join("kanegrowth.sqlite3").exists());
     }
 
     #[test]
     fn is_a_no_op_when_the_legacy_directory_does_not_exist_at_all() {
         let base = TempDir::new("no-legacy-dir");
-        let new_dir = base.0.join("com.corvale.app");
+        let new_dir = base.0.join("com.kanegrowth.app");
         let legacy_dir = base.0.join("com.spndr.app");
         // Deliberately not created - simulates a user who never had the pre-rename app installed.
 
-        let copied = copy_legacy_db_if_missing(&new_dir, &legacy_dir, "corvale.sqlite3").unwrap();
+        let copied = copy_legacy_db_if_missing(&new_dir, &legacy_dir, "kanegrowth.sqlite3").unwrap();
 
         assert!(!copied);
     }

@@ -42,7 +42,7 @@ export class SqliteWasmDriver implements LocalDb {
     }
   }
 
-  static async create(filename = 'corvale.sqlite3'): Promise<SqliteWasmDriver> {
+  static async create(filename = 'kanegrowth.sqlite3'): Promise<SqliteWasmDriver> {
     const driver = new SqliteWasmDriver(new SqliteWorker())
     await driver.send({ type: 'open', filename })
     return driver
@@ -52,7 +52,7 @@ export class SqliteWasmDriver implements LocalDb {
    * BUG-30 recovery: unlink the OPFS-backed store file so `bootstrapLocalDb` can recreate it from
    * empty. Spins up a short-lived worker purely to reach the SAHPool VFS, then tears it down.
    */
-  static async deleteStore(filename = 'corvale.sqlite3'): Promise<void> {
+  static async deleteStore(filename = 'kanegrowth.sqlite3'): Promise<void> {
     const driver = new SqliteWasmDriver(new SqliteWorker())
     try {
       await driver.send({ type: 'unlink', filename })

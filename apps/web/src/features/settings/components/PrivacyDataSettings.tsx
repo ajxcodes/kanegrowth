@@ -23,10 +23,10 @@ const PrivacyDataSettings: React.FC = () => {
 
             <div className="space-y-4 rounded-lg border border-border-subtle bg-bg-secondary/40 p-4">
                 <div>
-                    <p className="text-sm text-text-primary">What Corvale holds about you</p>
+                    <p className="text-sm text-text-primary">What KaneGrowth holds about you</p>
                     <p className="mt-1 text-sm leading-relaxed text-text-secondary">
                         Your name and email, your preferences, and the financial records you enter
-                        yourself. Corvale has no bank connection, runs no analytics, and sets one cookie
+                        yourself. KaneGrowth has no bank connection, runs no analytics, and sets one cookie
                         — the one that keeps you signed in.
                     </p>
                 </div>
@@ -40,7 +40,7 @@ const PrivacyDataSettings: React.FC = () => {
                             Export is never restricted.
                         </li>
                         <li>
-                            <span className="text-text-primary">Correct it:</span> everything in Corvale
+                            <span className="text-text-primary">Correct it:</span> everything in KaneGrowth
                             is editable in the app.
                         </li>
                         <li>

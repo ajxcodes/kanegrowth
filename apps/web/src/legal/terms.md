@@ -3,20 +3,20 @@
 ## Agreeing to these terms
 
 These terms are an agreement between you and Atharv Dewangan, an individual resident in India,
-covering your use of **the hosted Corvale service** at corvale.app. By creating an account you
+covering your use of **the hosted KaneGrowth service** at kanegrowth.app. By creating an account you
 accept them.
 
-They do **not** cover self-hosted installations. The Corvale software is licensed separately
+They do **not** cover self-hosted installations. The KaneGrowth software is licensed separately
 under the GNU AGPL v3.0 — see [Open-source software](#open-source-software) below.
 
-## Who can use Corvale
+## Who can use KaneGrowth
 
 **You must be 18 or older.** We require you to attest to this when you sign up. If you are not 18,
 you may not create an account. See the age section of the [Privacy Policy](./privacy.md) for why.
 
 One account is for one person. Do not share your login.
 
-**Where we offer the service.** Corvale is operated from India, and your data is hosted and
+**Where we offer the service.** KaneGrowth is operated from India, and your data is hosted and
 stored in the United States on Google Cloud infrastructure — the [Privacy Policy](./privacy.md)
 explains this and the basis for it. You may use it from anywhere, with one exception: **we do not
 offer the service in the European Economic Area or the UK.** If you are in one of those, please do
@@ -33,11 +33,11 @@ You are responsible for taking reasonable steps to protect your account credenti
 should notify us promptly if you suspect unauthorised access to your account. You can sign out of
 every session at once from Settings.
 
-## Corvale is not financial advice
+## KaneGrowth is not financial advice
 
 **This is the most important section on this page.**
 
-Corvale is a record-keeping and calculation tool. It is **not** financial, investment, tax, or
+KaneGrowth is a record-keeping and calculation tool. It is **not** financial, investment, tax, or
 legal advice, and using it does not create an advisory or fiduciary relationship between you and
 us. We are not financial advisers, planners, brokers, or accountants.
 
@@ -58,24 +58,24 @@ Several features produce numbers that can look like recommendations. They are no
 Consider speaking to a qualified professional before making a financial decision. Decisions you
 make remain yours. The [financial disclaimer](./financial-disclaimer.md) sets this out in full.
 
-## Corvale never moves money
+## KaneGrowth never moves money
 
-Corvale does not hold, transfer, transmit, invest, or take custody of funds. It is not a bank, a
+KaneGrowth does not hold, transfer, transmit, invest, or take custody of funds. It is not a bank, a
 payment service, a broker, or a money transmitter. It has no connection to your bank.
 
 Two features are easy to misread, so to be explicit:
 
-- **The saver** only lowers the spendable balance Corvale displays. It is an earmark. No money
+- **The saver** only lowers the spendable balance KaneGrowth displays. It is an earmark. No money
   moves and no transaction is created.
 - **A rollover** — the feature the app calls **Pushover** — snapshots your saver balance into
   history and resets the saver to zero. Again, no money moves.
 
-Your bank account is never touched by anything you do in Corvale.
+Your bank account is never touched by anything you do in KaneGrowth.
 
 ## Your data is yours, and you enter it
 
-Everything Corvale shows you is built from what you record. If what you enter is incomplete or
-wrong, what Corvale shows will be too.
+Everything KaneGrowth shows you is built from what you record. If what you enter is incomplete or
+wrong, what KaneGrowth shows will be too.
 
 Imported bank files are parsed on a best-effort basis and may be misread. We give no guarantee
 that imported data is complete or correct, and you remain responsible for reviewing it before
@@ -84,7 +84,7 @@ exactly this reason.
 
 ### Your content
 
-**"Your Content"** means the data and files you put into Corvale: transactions, accounts, budgets,
+**"Your Content"** means the data and files you put into KaneGrowth: transactions, accounts, budgets,
 goals, categories, tags, rules, templates, saved reports, receipts, workspace content, and
 anything else you enter or upload.
 
@@ -98,21 +98,21 @@ learning models.
 ### Our content
 
 Everything that is not Your Content stays ours. We and our licensors retain all rights in the
-Corvale software, the hosted service, its interface and design, the Corvale name and logo and
+KaneGrowth software, the hosted service, its interface and design, the KaneGrowth name and logo and
 other branding, the documentation, and the underlying methods and calculations.
 
 Nothing in these terms transfers any of that to you. "Your data is yours" means exactly that —
 your data — and not the product it is stored in.
 
 The **software** is separately licensed to everyone under the AGPL v3.0, which grants rights in
-the code. It does not grant rights in the Corvale name, logo, or other trademarks — see
+the code. It does not grant rights in the KaneGrowth name, logo, or other trademarks — see
 [Open-source software](#open-source-software).
 
 ## Acceptable use
 
 Do not:
 
-- Use Corvale for anything unlawful
+- Use KaneGrowth for anything unlawful
 - Try to access another user's data
 - Probe, scan, or attack the service, or work around rate limits
 - Place a load on the service that degrades it for other users, whether through automated clients,
@@ -142,10 +142,10 @@ roughly 90-day disclosure window, and a safe-harbour commitment for good-faith r
 
 ## Workspaces and shared data
 
-Corvale lets you share a workspace with other people as owner, editor, or viewer.
+KaneGrowth lets you share a workspace with other people as owner, editor, or viewer.
 
 - Anyone with access to a workspace can see the records inside it.
-- You can only invite someone who already has a Corvale account. Sending an invite therefore tells
+- You can only invite someone who already has a KaneGrowth account. Sending an invite therefore tells
   you whether an email address is registered here — invite only people who are expecting it.
 - If you invite someone, you are responsible for having a proper reason to share whatever
   personal or financial information you put in that workspace.
@@ -171,13 +171,13 @@ Corvale lets you share a workspace with other people as owner, editor, or viewer
 
 ## Copyright and takedown requests
 
-Corvale is a place to store your own financial records, so this rarely comes up. Still: do not
+KaneGrowth is a place to store your own financial records, so this rarely comes up. Still: do not
 upload material you have no right to store or share, including in a shared workspace.
 
-If you believe material stored in Corvale infringes your copyright, email support@corvale.app with:
+If you believe material stored in KaneGrowth infringes your copyright, email support@kanegrowth.app with:
 
 - What the work is, in enough detail to identify it
-- Where the infringing material is in Corvale, in enough detail for us to find it
+- Where the infringing material is in KaneGrowth, in enough detail for us to find it
 - Your contact details
 - A statement that you believe in good faith that the use is not authorised by the rights holder
   or by law
@@ -188,12 +188,12 @@ We will review a valid notice and may remove or disable access to the material, 
 close the account of a repeat infringer. If your material was removed and you believe that was a
 mistake, write to the same address and tell us why.
 
-Note that almost everything in Corvale is private to one account and published nowhere, so a
+Note that almost everything in KaneGrowth is private to one account and published nowhere, so a
 takedown here removes a user's own stored file rather than anything publicly visible.
 
 ## Availability
 
-Corvale is provided on an "as available" basis. There is **no uptime guarantee and no service
+KaneGrowth is provided on an "as available" basis. There is **no uptime guarantee and no service
 level agreement.** It is built and operated by one person, and it may change, break, or be taken
 offline for maintenance without notice.
 
@@ -234,17 +234,17 @@ your data first.
 **If we shut the service down**, we will give at least 30 days of notice before accounts are
 closed and data is deleted, so you can export everything you want to keep.
 Export stays available for that whole window. We will announce a shutdown by email to the address
-on your account and on corvale.app.
+on your account and on kanegrowth.app.
 
 ## Warranties and liability
 
-Corvale is provided "as is", without warranties of any kind, whether express or implied,
+KaneGrowth is provided "as is", without warranties of any kind, whether express or implied,
 including any implied warranty of merchantability, fitness for a particular purpose, accuracy, or
 non-infringement.
 
 To the fullest extent the law allows, we are not liable for indirect, incidental, special,
 consequential or punitive damages, or for lost profits, lost savings, lost data, or any financial
-decision made using Corvale. Where liability cannot be excluded, it is limited to the greater of
+decision made using KaneGrowth. Where liability cannot be excluded, it is limited to the greater of
 the amount you paid us in the twelve months before the claim, or ₹1,000.
 
 Nothing here excludes liability that cannot lawfully be excluded.
@@ -293,7 +293,7 @@ If we do not enforce a right or a provision straight away, that is not a waiver 
 
 These terms, together with the [Privacy Policy](./privacy.md), the
 [Cookie Policy](./cookies.md), and the [financial disclaimer](./financial-disclaimer.md), are the
-entire agreement between you and us about the hosted Corvale service, and they replace any earlier
+entire agreement between you and us about the hosted KaneGrowth service, and they replace any earlier
 understanding, statement or representation about it.
 
 This does not exclude liability for fraud or fraudulent misrepresentation, and it does not affect
@@ -311,7 +311,7 @@ and close your account.
 
 ## Open-source software
 
-Corvale's source code is published under the **GNU Affero General Public License v3.0**. You may
+KaneGrowth's source code is published under the **GNU Affero General Public License v3.0**. You may
 run, study, modify and redistribute it under that licence, including hosting your own instance.
 
 The licence governs the **code**. These terms govern **our hosted service**. Nothing in these
@@ -320,10 +320,10 @@ software — including the age requirement above, which is a condition of using 
 only.
 
 **Trademarks are not covered by the licence.** The AGPL grants rights in the code, not in names or
-branding. "Corvale", the Corvale logo, and our other brand assets remain ours. If you run a
+branding. "KaneGrowth", the KaneGrowth logo, and our other brand assets remain ours. If you run a
 modified version or your own instance, do not present it in a way that suggests it is the official
-Corvale service or that we operate, endorse, or support it. Nominative references — saying your
-instance is based on Corvale — are fine.
+KaneGrowth service or that we operate, endorse, or support it. Nominative references — saying your
+instance is based on KaneGrowth — are fine.
 
 If you run your own instance, these terms and our Privacy Policy do not apply to it. The operator
 of that instance is responsible for deciding how it processes personal data and for providing any
@@ -331,5 +331,5 @@ notices, safeguards, or other protections required by the law that applies to th
 
 ## Contact
 
-Questions about these terms: support@corvale.app. See the [Contact page](./contact.md) for support,
+Questions about these terms: support@kanegrowth.app. See the [Contact page](./contact.md) for support,
 privacy and security routes.

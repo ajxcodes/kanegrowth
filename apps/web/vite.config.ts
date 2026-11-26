@@ -50,7 +50,7 @@ const ALIASES = [
  * here; `tauri.conf.json` still has to list it explicitly since Tauri's policy is separate.)
  */
 export const desktopCspPlugin = (): Plugin => ({
-    name: 'corvale-desktop-csp',
+    name: 'kanegrowth-desktop-csp',
     transformIndexHtml: (html) =>
         html
             .replace("script-src 'self';", "script-src 'self' 'wasm-unsafe-eval';")
@@ -62,7 +62,7 @@ export const desktopCspPlugin = (): Plugin => ({
 })
 
 export const captchaCspPlugin = (): Plugin => ({
-    name: 'corvale-captcha-csp',
+    name: 'kanegrowth-captcha-csp',
     transformIndexHtml: (html) =>
         html
             // Regex, not a literal-string replace: on desktop builds `desktopCspPlugin` runs
@@ -133,10 +133,15 @@ export default defineConfig(({ mode }) => {
       // so the "new version available" prompt is a real in-app UI, not the plugin's default popup.
       injectRegister: false,
       registerType: 'prompt',
-      includeAssets: ['apple-touch-icon.png'],
+      includeAssets: [
+        'favicon.ico',
+        'apple-touch-icon.png',
+        'icons/kanegrowth_logo_bonsai_transparent.png',
+        'icons/kanegrowth_logo_bonsai_dark_transparent.png',
+      ],
       manifest: {
-        name: 'Corvale — Know where every dollar went',
-        short_name: 'Corvale',
+        name: 'KaneGrowth — Building wealth from good habits at home',
+        short_name: 'KaneGrowth',
         description: 'Personal finance tracker — budgets, accounts, transactions and reports that work offline.',
         theme_color: '#14121c',
         background_color: '#14121c',
@@ -150,7 +155,7 @@ export default defineConfig(({ mode }) => {
         ],
       },
       injectManifest: {
-        globPatterns: ['**/*.{js,css,html,woff2,svg,png}'],
+        globPatterns: ['**/*.{js,css,html,woff2,svg,png,ico}'],
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
       },
       devOptions: {
@@ -185,7 +190,7 @@ export default defineConfig(({ mode }) => {
       },
     },
   },
-  // RF1: was frontend/corvale/vitest.config.ts — merged here so the alias list lives in one place.
+  // RF1: was standalone vitest.config.ts — merged here so the alias list lives in one place.
   test: {
     globals: true,
     environment: 'happy-dom',

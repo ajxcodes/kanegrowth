@@ -18,9 +18,9 @@ describe('TauriSqlDriver', () => {
     expect(invokeMock).toHaveBeenCalledWith('db_open', { filename: 'custom.sqlite3' })
   })
 
-  it('defaults the filename to corvale.sqlite3', async () => {
+  it('defaults the filename to kanegrowth.sqlite3', async () => {
     await TauriSqlDriver.create()
-    expect(invokeMock).toHaveBeenCalledWith('db_open', { filename: 'corvale.sqlite3' })
+    expect(invokeMock).toHaveBeenCalledWith('db_open', { filename: 'kanegrowth.sqlite3' })
   })
 
   it('forwards exec calls with sql and params', async () => {

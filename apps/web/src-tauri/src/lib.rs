@@ -11,8 +11,8 @@ use db::DbState;
 pub fn run() {
     tauri::Builder::default()
         // BUG-30: writes to stdout and a rotating file in the OS app-log dir
-        // (`%LOCALAPPDATA%\com.corvale.app\logs` / `~/Library/Logs/com.corvale.app` /
-        // `~/.local/share/com.corvale.app/logs`), so an opaque local-store failure on a user's
+        // (`%LOCALAPPDATA%\com.kanegrowth.app\logs` / `~/Library/Logs/com.kanegrowth.app` /
+        // `~/.local/share/com.kanegrowth.app/logs`), so an opaque local-store failure on a user's
         // machine leaves a readable trail. Only Rust-side `log::*` records reach that file — the
         // WebView console is NOT forwarded to disk (P10), and must not be: axios errors there
         // carry `Authorization` headers. `attachConsole()` on the JS side goes the other way,
@@ -24,7 +24,7 @@ pub fn run() {
                 ))
                 .target(tauri_plugin_log::Target::new(
                     tauri_plugin_log::TargetKind::LogDir {
-                        file_name: Some("corvale".into()),
+                        file_name: Some("kanegrowth".into()),
                     },
                 ))
                 .level(log::LevelFilter::Info)

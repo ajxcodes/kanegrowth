@@ -34,7 +34,7 @@ export const exportBackup = async (
         responseType: 'blob',
     })
 
-    const filename = `corvale-backup.${format === 'zip' ? 'zip' : 'json'}`
+    const filename = `kanegrowth-backup.${format === 'zip' ? 'zip' : 'json'}`
     await saveExportedFile(blobData, filename)
 }
 

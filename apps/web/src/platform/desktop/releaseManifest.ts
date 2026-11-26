@@ -29,7 +29,7 @@ export interface ReleaseManifest {
     platforms: PlatformRelease[]
 }
 
-const REPO_URL = 'https://github.com/RRI-Atharv37/corvale'
+const REPO_URL = 'https://github.com/ajxcodes/kanegrowth'
 const RELEASE_TAG = 'v0.17.0'
 const ASSETS_URL = `${REPO_URL}/releases/download/${RELEASE_TAG}`
 
@@ -44,7 +44,7 @@ export const LIVE_RELEASE_MANIFEST_URL = `${BASE_URL}${API_PATHS.DESKTOP.RELEASE
 
 const RELEASE_HIGHLIGHTS = [
     'Native SQLite storage, encrypted at rest with SQLCipher',
-    'Sign in once, then use Corvale fully offline',
+    'Sign in once, then use KaneGrowth fully offline',
     'Automatic updates, verified against a signed release before install',
 ]
 
@@ -60,7 +60,7 @@ export const getReleaseManifest = (): ReleaseManifest => ({
     releaseNotesUrl: `${REPO_URL}/releases/tag/${RELEASE_TAG}`,
     highlights: [
         'Native SQLite storage, encrypted at rest with SQLCipher',
-        'Sign in once, then use Corvale fully offline',
+        'Sign in once, then use KaneGrowth fully offline',
         'Automatic updates, verified against a signed release before install',
     ],
     platforms: [
@@ -180,8 +180,8 @@ const hasExtension = (name: string, extension: string): boolean =>
 
 // Editorial content (labels, requirements, which format is the one-click download) lives here;
 // only the per-asset URL / checksum / size come from the fetched manifest. Matchers key off the
-// Tauri bundler's output names (e.g. `Corvale_1.2.0_aarch64.dmg`, `Corvale_1.2.0_x64-setup.exe`),
-// which are stable across the version number and the spndr -> Corvale rename.
+// Tauri bundler's output names (e.g. `KaneGrowth_1.2.0_aarch64.dmg`, `KaneGrowth_1.2.0_x64-setup.exe`),
+// which are stable across the version number and the spndr -> KaneGrowth rename.
 const PLATFORM_TEMPLATES: PlatformTemplate[] = [
     {
         id: 'windows',

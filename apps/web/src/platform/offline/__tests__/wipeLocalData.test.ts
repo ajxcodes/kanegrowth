@@ -11,8 +11,8 @@ vi.mock('../pinStorage', async () => {
 
 const { wipeLocalData } = await import('../wipeLocalData')
 
-const PIN_VERIFIER_KEY = 'corvale_pin_verifier'
-const PIN_SALT_KEY = 'corvale_pin_salt'
+const PIN_VERIFIER_KEY = 'kanegrowth_pin_verifier'
+const PIN_SALT_KEY = 'kanegrowth_pin_salt'
 const LEGACY_PIN_VERIFIER_KEY = 'spndr_pin_verifier'
 
 describe('wipeLocalData (BUG-30: report a cleared PIN)', () => {

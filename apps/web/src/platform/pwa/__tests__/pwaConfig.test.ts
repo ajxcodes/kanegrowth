@@ -84,8 +84,8 @@ describe('PWA config (Sprint 13.8)', () => {
 
         expect(swSource).toContain("from '@platform/pwa/constants'")
         expect(backgroundSyncSource).toContain("from './constants'")
-        expect(constantsSource).toContain("OUTBOX_SYNC_TAG = 'corvale-outbox-sync'")
-        expect(constantsSource).toContain("FLUSH_OUTBOX_MESSAGE = 'CORVALE_FLUSH_OUTBOX'")
+        expect(constantsSource).toContain("OUTBOX_SYNC_TAG = 'kanegrowth-outbox-sync'")
+        expect(constantsSource).toContain("FLUSH_OUTBOX_MESSAGE = 'KANEGROWTH_FLUSH_OUTBOX'")
     })
 
     /**

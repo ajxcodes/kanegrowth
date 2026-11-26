@@ -21,7 +21,7 @@ const MIGRATIONS: &[(i64, &str)] = &[
 ];
 
 /// Runs idempotent schema migrations `0001`–`0005` using SQLite `PRAGMA user_version`,
-/// matching Corvale/KaneGrowth's browser migration sequence.
+/// matching KaneGrowth's browser migration sequence.
 pub fn run_migrations(conn: &Connection) -> Result<(), AnalyticsError> {
     let current_version: i64 = conn
         .query_row("PRAGMA user_version;", [], |row| row.get(0))

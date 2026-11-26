@@ -6,7 +6,7 @@ import { isLocalPinEnabled } from '@lib/localPinFlag'
 import { getApiErrorMessage } from '@lib/apiError'
 import { BRAND } from '@lib/brand'
 
-const PROMPT_SEEN_KEY = 'corvale_pin_prompt_seen'
+const PROMPT_SEEN_KEY = 'kanegrowth_pin_prompt_seen'
 
 // Onboarding's own wizard modal (`OnboardingWizard`) manages its visibility internally and
 // doesn't expose it, so this prompt is staggered behind a short delay instead of reacting to

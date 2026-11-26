@@ -70,3 +70,23 @@ describe('themed scrollbars (V8)', () => {
         expect(indexCss).toMatch(/\.scroll-area\s*\{[^}]*scrollbar-width:\s*thin/)
     })
 })
+
+describe('theme persistence (KaneGrowth)', () => {
+    it('persists and restores KaneGrowth theme preference via initTheme and applyTheme', async () => {
+        const { applyTheme, initTheme, THEME_STORAGE_KEY } = await import('@lib/theme')
+        document.documentElement.removeAttribute('data-theme')
+        localStorage.clear()
+
+        applyTheme('light')
+        expect(document.documentElement.getAttribute('data-theme')).toBe('light')
+        expect(THEME_STORAGE_KEY).toBe('kanegrowth_theme')
+        expect(localStorage.getItem('kanegrowth_theme')).toBe('light')
+
+        document.documentElement.removeAttribute('data-theme')
+        expect(initTheme()).toBe('light')
+        expect(document.documentElement.getAttribute('data-theme')).toBe('light')
+
+        localStorage.clear()
+        document.documentElement.removeAttribute('data-theme')
+    })
+})

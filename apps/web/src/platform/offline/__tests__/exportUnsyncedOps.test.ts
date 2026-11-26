@@ -38,7 +38,7 @@ describe('exportUnsyncedOps (BUG-26: route through the shared save helper)', () 
     expect(result).toBe(true)
     const [blob, filename] = saveExportedFileMock.mock.calls[0]
     expect(blob).toBeInstanceOf(Blob)
-    expect(filename).toMatch(/^corvale-unsynced-changes-.*\.json$/)
+    expect(filename).toMatch(/^kanegrowth-unsynced-changes-.*\.json$/)
     expect(filename).not.toContain(':')
   })
 

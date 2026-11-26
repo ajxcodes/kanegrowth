@@ -25,7 +25,7 @@ import {
     FiCompass,
     FiDownload,
 } from 'react-icons/fi'
-import { BRAND } from '@lib/brand'
+import BrandLogo from '@ui/BrandLogo'
 import OnboardingWizard, { OnboardingWizardHandle } from '@features/onboarding/components/OnboardingWizard'
 import PinSetupPrompt from '@features/onboarding/components/PinSetupPrompt'
 import PinSettings from '@features/settings/components/PinSettings'
@@ -287,10 +287,7 @@ const DashboardLayout: React.FC = () => {
     const sidebarContent = (
         <>
             <div className="shrink-0 px-4 py-6 border-b border-border-subtle">
-                <p className="font-display text-lg font-bold tracking-tight">
-                    <span className="text-gradient-accent">{BRAND.name}</span>
-                </p>
-                <p className="text-xs text-text-quiet mt-1">Stop guessing. Start knowing.</p>
+                <BrandLogo size="sm" showTagline linkTo="/dashboard" />
             </div>
 
             <WorkspaceSwitcher />
@@ -366,7 +363,11 @@ const DashboardLayout: React.FC = () => {
                             <FiMenu size={18} />
                         </button>
 
-                        <p className="text-sm text-text-muted truncate">
+                        <div className="lg:hidden shrink-0">
+                            <BrandLogo size="sm" showTagline={false} linkTo="/dashboard" />
+                        </div>
+
+                        <p className="hidden sm:block text-sm text-text-muted truncate">
                             Welcome{user ? `, ${user.fullName.split(' ')[0]}` : ''}
                         </p>
                     </div>

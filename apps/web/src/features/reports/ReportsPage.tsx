@@ -202,7 +202,7 @@ const Reports = () => {
             )
 
             const blob = ensureExportBlob(blobData, exportFormat)
-            const baseName = `corvale-report-${periodDates.startDate}-${periodDates.endDate}`
+            const baseName = `kanegrowth-report-${periodDates.startDate}-${periodDates.endDate}`
             const saved = await saveExportedFile(blob, buildExportFilename(baseName, exportFormat))
             if (saved) {
                 toast.success('Report downloaded')
