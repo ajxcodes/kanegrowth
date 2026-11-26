@@ -1,6 +1,7 @@
 use crate::config::Config;
 use crate::db::Db;
 use crate::models::{AuthData, UserDto};
+use crate::util::now_iso;
 use argon2::password_hash::SaltString;
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use chrono::{Duration, Utc};
@@ -71,10 +72,6 @@ pub fn hash_refresh_token(token: &str) -> String {
 
 pub fn new_refresh_token() -> String {
     Uuid::new_v4().to_string() + &Uuid::new_v4().to_string().replace('-', "")
-}
-
-pub fn now_iso() -> String {
-    Utc::now().to_rfc3339()
 }
 
 pub fn user_to_dto(

@@ -1,11 +1,8 @@
 use crate::db::Db;
 use crate::models::WorkspaceDto;
+use crate::util::now_iso;
 use rusqlite::params;
 use uuid::Uuid;
-
-pub fn now_iso() -> String {
-    chrono::Utc::now().to_rfc3339()
-}
 
 pub fn create_workspace(db: &Db, user_id: &str, name: &str) -> Result<WorkspaceDto, String> {
     let conn = crate::db::conn(db);

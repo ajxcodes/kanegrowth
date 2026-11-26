@@ -133,11 +133,19 @@ pub fn promoted_columns(table: &str) -> &'static [&'static str] {
     }
 }
 
-// helper to get table columns from db
-pub fn table_columns(conn: &rusqlite::Connection, table: &str) -> Vec<String> {
-    let mut stmt = conn
-        .prepare(&format!("PRAGMA table_info({})", table))
-        .unwrap();
-    let rows = stmt.query_map([], |r| r.get::<_, String>(1)).unwrap();
-    rows.filter_map(|r| r.ok()).collect()
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn entity_table_roundtrip() {
+        assert_eq!(table_for_entity("account"), Some("accounts"));
+        assert_eq!(entity_for_table("accounts"), Some("account"));
+        assert_eq!(all_tables().len(), 10);
+        assert!(promoted_columns("accounts").contains(&"currentBalance"));
+    }
+    #[test]
+    fn personal_entities() {
+        assert!(is_personal_entity("category"));
+        assert!(!is_personal_entity("account"));
+    }
 }

@@ -6,6 +6,7 @@ mod migrations;
 mod models;
 mod ntfy;
 mod sync;
+mod util;
 mod workspaces;
 
 use crate::auth::{extract_bearer, validate_access_token};

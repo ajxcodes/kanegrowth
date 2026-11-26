@@ -20,3 +20,11 @@ pub fn open_db(path: &str) -> Result<Db, String> {
 pub fn conn(db: &Db) -> std::sync::MutexGuard<'_, Connection> {
     db.lock().unwrap()
 }
+
+pub fn table_columns(conn: &Connection, table: &str) -> Vec<String> {
+    let mut stmt = conn
+        .prepare(&format!("PRAGMA table_info({})", table))
+        .unwrap();
+    let rows = stmt.query_map([], |r| r.get::<_, String>(1)).unwrap();
+    rows.filter_map(|r| r.ok()).collect()
+}

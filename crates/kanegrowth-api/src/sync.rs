@@ -1,14 +1,11 @@
 use crate::db::Db;
 use crate::entity_map;
 use crate::models::*;
+use crate::util::now_iso;
 use chrono::Utc;
 use rusqlite::params;
 use serde_json::{json, Value};
 use std::sync::MutexGuard;
-
-fn now_iso() -> String {
-    Utc::now().to_rfc3339()
-}
 
 fn json_to_sql(v: Value) -> Box<dyn rusqlite::ToSql> {
     match v {
@@ -18,7 +15,11 @@ fn json_to_sql(v: Value) -> Box<dyn rusqlite::ToSql> {
             if let Some(i) = n.as_i64() {
                 Box::new(i)
             } else if let Some(f) = n.as_f64() {
-                Box::new(f)
+                if f.fract() != 0.0 {
+                    Box::new((f * 100.0).round() as i64)
+                } else {
+                    Box::new(f as i64)
+                }
             } else {
                 Box::new(n.to_string())
             }
@@ -107,10 +108,6 @@ fn apply_defaults(table: &str, values: &mut std::collections::BTreeMap<String, V
         }
         _ => {}
     }
-}
-
-fn table_columns(conn: &rusqlite::Connection, table: &str) -> Vec<String> {
-    entity_map::table_columns(conn, table)
 }
 
 #[allow(clippy::type_complexity)]
@@ -257,7 +254,7 @@ fn upsert_record(
     }
     let data = serde_json::to_string(&rec).map_err(|e| e.to_string())?;
 
-    let cols = table_columns(conn, table);
+    let cols = crate::db::table_columns(conn, table);
     let mut values: std::collections::BTreeMap<String, Value> = std::collections::BTreeMap::new();
     for c in &cols {
         values.insert(c.clone(), Value::Null);
@@ -755,3 +752,43 @@ fn compute_checkpoint(
 // ensure unused import not warning
 #[allow(dead_code)]
 fn _use_mutex(_m: MutexGuard<'_, rusqlite::Connection>) {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rusqlite::Connection;
+    use serde_json::json;
+
+    #[test]
+    fn json_to_sql_integer_minor_units() {
+        let conn = Connection::open_in_memory().unwrap();
+        conn.execute(
+            "CREATE TABLE accounts (_id TEXT PRIMARY KEY, userId TEXT, workspaceId TEXT, name TEXT, type TEXT, currency TEXT, currentBalance REAL NOT NULL DEFAULT 0, isArchived INTEGER NOT NULL DEFAULT 0, accountGroup TEXT, isLiability INTEGER NOT NULL DEFAULT 0, interestRateBps INTEGER NOT NULL DEFAULT 0, minimumPaymentMinor INTEGER NOT NULL DEFAULT 0, data TEXT NOT NULL, updatedAt TEXT NOT NULL, deletedAt TEXT, _localUpdatedAt TEXT NOT NULL, _dirty INTEGER NOT NULL DEFAULT 0, _syncState TEXT NOT NULL DEFAULT 'synced')",
+            [],
+        )
+        .unwrap();
+        let rec = json!({
+            "_id": "acc1",
+            "name": "Cash",
+            "type": "bank",
+            "currency": "USD",
+            "currentBalance": 10.5,
+            "updatedAt": "2026-01-01T00:00:00Z"
+        });
+        upsert_record(&conn, "accounts", &rec, "u1", None).unwrap();
+        let val: f64 = conn
+            .query_row(
+                "SELECT currentBalance FROM accounts WHERE _id='acc1'",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap();
+        assert_eq!(val, 1050.0);
+    }
+
+    #[test]
+    fn checkpoint_encoding_roundtrip() {
+        let c = format!("{}|{}", "2026-01-01T00:00:00Z", "id1");
+        assert_eq!(c, "2026-01-01T00:00:00Z|id1");
+    }
+}

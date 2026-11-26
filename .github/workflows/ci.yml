@@ -111,6 +111,15 @@ jobs:
       - name: Cargo test workspace
         run: cargo test --workspace
 
+      - name: Cargo unit tests (server)
+        run: cargo test -p kanegrowth-api --lib
+
+      - name: Cargo integration tests (server)
+        run: cargo test -p kanegrowth-api --tests
+
+      - name: Architecture boundary check
+        run: cargo test -p kanegrowth-api --test 'arch_*'
+
   e2e:
     name: Playwright E2E (Desktop & Mobile)
     runs-on: ubuntu-latest
@@ -140,6 +149,9 @@ jobs:
 
       - name: Run Playwright E2E tests
         run: npm run test:e2e
+
+      - name: Run Web App Playwright E2E tests
+        run: npm --prefix apps/web run test:e2e
 
       - name: Upload Playwright report on failure
         if: failure()
