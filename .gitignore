@@ -1,0 +1,14 @@
+node_modules/
+dist/
+target/
+playwright-report/
+test-results/
+.env
+.env.local
+apps/web/.env
+apps/web/.env.local
+apps/web/src-tauri/target/
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+.DS_Store

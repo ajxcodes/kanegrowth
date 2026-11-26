@@ -1,0 +1,291 @@
+{
+  "asOfDate": "2026-11-25",
+  "workspaceId": "ws_kanegrowth_demo",
+  "userId": "user_kanegrowth_local",
+  "members": [
+    {
+      "id": "mem_alex",
+      "name": "Alex",
+      "role": "owner",
+      "color": "#6366f1"
+    },
+    {
+      "id": "mem_sam",
+      "name": "Sam",
+      "role": "partner",
+      "color": "#10b981"
+    }
+  ],
+  "accounts": [
+    {
+      "id": "acc_checking",
+      "name": "Joint Checking",
+      "accountType": "checking",
+      "accountGroup": "banking",
+      "currency": "USD",
+      "currentBalanceMinor": 1450000,
+      "isLiability": false,
+      "interestRateBps": 0,
+      "minimumPaymentMinor": 0
+    },
+    {
+      "id": "acc_savings",
+      "name": "Emergency & Sinking",
+      "accountType": "savings",
+      "accountGroup": "cash",
+      "currency": "USD",
+      "currentBalanceMinor": 2200000,
+      "isLiability": false,
+      "interestRateBps": 425,
+      "minimumPaymentMinor": 0
+    },
+    {
+      "id": "acc_brokerage",
+      "name": "Index Portfolio",
+      "accountType": "investment",
+      "accountGroup": "investment",
+      "currency": "USD",
+      "currentBalanceMinor": 5800000,
+      "isLiability": false,
+      "interestRateBps": 0,
+      "minimumPaymentMinor": 0
+    },
+    {
+      "id": "acc_card_a",
+      "name": "Everyday Rewards Card",
+      "accountType": "credit",
+      "accountGroup": "credit",
+      "currency": "USD",
+      "currentBalanceMinor": 200000,
+      "isLiability": true,
+      "interestRateBps": 1200,
+      "minimumPaymentMinor": 5000
+    },
+    {
+      "id": "acc_card_b",
+      "name": "High-APR Travel Card",
+      "accountType": "credit",
+      "accountGroup": "credit",
+      "currency": "USD",
+      "currentBalanceMinor": 400000,
+      "isLiability": true,
+      "interestRateBps": 2400,
+      "minimumPaymentMinor": 10000
+    },
+    {
+      "id": "acc_auto_loan",
+      "name": "Auto Loan",
+      "accountType": "loan",
+      "accountGroup": "loan",
+      "currency": "USD",
+      "currentBalanceMinor": 950000,
+      "isLiability": true,
+      "interestRateBps": 650,
+      "minimumPaymentMinor": 32000
+    }
+  ],
+  "categories": [
+    {
+      "id": "cat_salary",
+      "name": "Household Salary",
+      "envelopeType": "income",
+      "monthlyTargetMinor": 0
+    },
+    {
+      "id": "cat_freelance",
+      "name": "Side Consulting",
+      "envelopeType": "income",
+      "monthlyTargetMinor": 0
+    },
+    {
+      "id": "cat_housing",
+      "name": "Housing & Mortgage",
+      "envelopeType": "expense",
+      "monthlyTargetMinor": 220000
+    },
+    {
+      "id": "cat_groceries",
+      "name": "Groceries",
+      "envelopeType": "expense",
+      "monthlyTargetMinor": 60000
+    },
+    {
+      "id": "cat_dining",
+      "name": "Dining Out",
+      "envelopeType": "expense",
+      "monthlyTargetMinor": 40000
+    },
+    {
+      "id": "cat_utilities",
+      "name": "Utilities & Internet",
+      "envelopeType": "expense",
+      "monthlyTargetMinor": 25000
+    },
+    {
+      "id": "cat_sinking_home",
+      "name": "Home Maintenance Fund",
+      "envelopeType": "sinking_fund",
+      "monthlyTargetMinor": 50000
+    },
+    {
+      "id": "cat_savings_retire",
+      "name": "Retirement Contribution",
+      "envelopeType": "savings",
+      "monthlyTargetMinor": 100000
+    },
+    {
+      "id": "cat_transfer",
+      "name": "Internal Transfer",
+      "envelopeType": "transfer",
+      "monthlyTargetMinor": 0
+    }
+  ],
+  "tags": [
+    { "id": "tag_essential", "name": "essential" },
+    { "id": "tag_discretionary", "name": "discretionary" },
+    { "id": "tag_recurring", "name": "recurring" }
+  ],
+  "recurringRules": [
+    {
+      "id": "rec_salary",
+      "accountId": "acc_checking",
+      "categoryId": "cat_salary",
+      "txType": "income",
+      "amountMinor": 650000,
+      "cadence": "monthly",
+      "isActive": true
+    },
+    {
+      "id": "rec_housing",
+      "accountId": "acc_checking",
+      "categoryId": "cat_housing",
+      "txType": "expense",
+      "amountMinor": 220000,
+      "cadence": "monthly",
+      "isActive": true
+    },
+    {
+      "id": "rec_groceries",
+      "accountId": "acc_card_a",
+      "categoryId": "cat_groceries",
+      "txType": "expense",
+      "amountMinor": 60000,
+      "cadence": "monthly",
+      "isActive": true
+    },
+    {
+      "id": "rec_utilities",
+      "accountId": "acc_checking",
+      "categoryId": "cat_utilities",
+      "txType": "expense",
+      "amountMinor": 24000,
+      "cadence": "monthly",
+      "isActive": true
+    }
+  ],
+  "transactions": [
+    { "id": "tx_2025_10_sal", "accountId": "acc_checking", "categoryId": "cat_salary", "txType": "income", "status": "posted", "amountMinor": 610000, "date": "2025-10-01", "description": "October Salary", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_recurring"] },
+    { "id": "tx_2025_10_house", "accountId": "acc_checking", "categoryId": "cat_housing", "txType": "expense", "status": "posted", "amountMinor": 215000, "date": "2025-10-02", "description": "October Mortgage", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_essential", "tag_recurring"] },
+    { "id": "tx_2025_10_groc", "accountId": "acc_card_a", "categoryId": "cat_groceries", "txType": "expense", "status": "posted", "amountMinor": 56000, "date": "2025-10-12", "description": "October Groceries", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_essential"] },
+    { "id": "tx_2025_10_din", "accountId": "acc_card_b", "categoryId": "cat_dining", "txType": "expense", "status": "posted", "amountMinor": 38000, "date": "2025-10-18", "description": "October Dining", "memberId": "mem_sam", "isShared": false, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_discretionary"] },
+
+    { "id": "tx_2025_11_sal", "accountId": "acc_checking", "categoryId": "cat_salary", "txType": "income", "status": "posted", "amountMinor": 615000, "date": "2025-11-01", "description": "November 2025 Salary", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_recurring"] },
+    { "id": "tx_2025_11_house", "accountId": "acc_checking", "categoryId": "cat_housing", "txType": "expense", "status": "posted", "amountMinor": 215000, "date": "2025-11-02", "description": "November 2025 Mortgage", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_essential", "tag_recurring"] },
+    { "id": "tx_2025_11_groc", "accountId": "acc_card_a", "categoryId": "cat_groceries", "txType": "expense", "status": "posted", "amountMinor": 57000, "date": "2025-11-11", "description": "November 2025 Groceries", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_essential"] },
+    { "id": "tx_2025_11_din", "accountId": "acc_card_b", "categoryId": "cat_dining", "txType": "expense", "status": "posted", "amountMinor": 39000, "date": "2025-11-19", "description": "November 2025 Dining", "memberId": "mem_sam", "isShared": false, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_discretionary"] },
+
+    { "id": "tx_2025_12_sal", "accountId": "acc_checking", "categoryId": "cat_salary", "txType": "income", "status": "posted", "amountMinor": 630000, "date": "2025-12-01", "description": "December Salary", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_recurring"] },
+    { "id": "tx_2025_12_house", "accountId": "acc_checking", "categoryId": "cat_housing", "txType": "expense", "status": "posted", "amountMinor": 220000, "date": "2025-12-02", "description": "December Mortgage", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_essential", "tag_recurring"] },
+    { "id": "tx_2025_12_groc", "accountId": "acc_card_a", "categoryId": "cat_groceries", "txType": "expense", "status": "posted", "amountMinor": 61000, "date": "2025-12-14", "description": "December Groceries", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_essential"] },
+    { "id": "tx_2025_12_din", "accountId": "acc_card_b", "categoryId": "cat_dining", "txType": "expense", "status": "posted", "amountMinor": 43000, "date": "2025-12-22", "description": "Holiday Dining", "memberId": "mem_sam", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_discretionary"] },
+
+    { "id": "tx_2026_01_sal", "accountId": "acc_checking", "categoryId": "cat_salary", "txType": "income", "status": "posted", "amountMinor": 620000, "date": "2026-01-01", "description": "January Salary", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_recurring"] },
+    { "id": "tx_2026_01_house", "accountId": "acc_checking", "categoryId": "cat_housing", "txType": "expense", "status": "posted", "amountMinor": 220000, "date": "2026-01-02", "description": "January Mortgage", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_essential", "tag_recurring"] },
+    { "id": "tx_2026_01_groc", "accountId": "acc_card_a", "categoryId": "cat_groceries", "txType": "expense", "status": "posted", "amountMinor": 58000, "date": "2026-01-12", "description": "January Groceries", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_essential"] },
+    { "id": "tx_2026_01_din", "accountId": "acc_card_b", "categoryId": "cat_dining", "txType": "expense", "status": "posted", "amountMinor": 37000, "date": "2026-01-18", "description": "January Dining", "memberId": "mem_sam", "isShared": false, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_discretionary"] },
+
+    { "id": "tx_2026_02_sal", "accountId": "acc_checking", "categoryId": "cat_salary", "txType": "income", "status": "posted", "amountMinor": 620000, "date": "2026-02-01", "description": "February Salary", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_recurring"] },
+    { "id": "tx_2026_02_house", "accountId": "acc_checking", "categoryId": "cat_housing", "txType": "expense", "status": "posted", "amountMinor": 220000, "date": "2026-02-02", "description": "February Mortgage", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_essential", "tag_recurring"] },
+    { "id": "tx_2026_02_din", "accountId": "acc_card_b", "categoryId": "cat_dining", "txType": "expense", "status": "posted", "amountMinor": 39000, "date": "2026-02-14", "description": "February Dining", "memberId": "mem_sam", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_discretionary"] },
+
+    { "id": "tx_2026_03_sal", "accountId": "acc_checking", "categoryId": "cat_salary", "txType": "income", "status": "posted", "amountMinor": 625000, "date": "2026-03-01", "description": "March Salary", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_recurring"] },
+    { "id": "tx_2026_03_house", "accountId": "acc_checking", "categoryId": "cat_housing", "txType": "expense", "status": "posted", "amountMinor": 220000, "date": "2026-03-02", "description": "March Mortgage", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_essential", "tag_recurring"] },
+    { "id": "tx_2026_03_din", "accountId": "acc_card_b", "categoryId": "cat_dining", "txType": "expense", "status": "posted", "amountMinor": 40000, "date": "2026-03-15", "description": "March Dining", "memberId": "mem_sam", "isShared": false, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_discretionary"] },
+
+    { "id": "tx_2026_04_sal", "accountId": "acc_checking", "categoryId": "cat_salary", "txType": "income", "status": "posted", "amountMinor": 630000, "date": "2026-04-01", "description": "April Salary", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_recurring"] },
+    { "id": "tx_2026_04_house", "accountId": "acc_checking", "categoryId": "cat_housing", "txType": "expense", "status": "posted", "amountMinor": 220000, "date": "2026-04-02", "description": "April Mortgage", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_essential", "tag_recurring"] },
+    { "id": "tx_2026_04_din", "accountId": "acc_card_b", "categoryId": "cat_dining", "txType": "expense", "status": "posted", "amountMinor": 38000, "date": "2026-04-16", "description": "April Dining", "memberId": "mem_sam", "isShared": false, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_discretionary"] },
+
+    { "id": "tx_2026_05_sal", "accountId": "acc_checking", "categoryId": "cat_salary", "txType": "income", "status": "posted", "amountMinor": 630000, "date": "2026-05-01", "description": "May Salary", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_recurring"] },
+    { "id": "tx_2026_05_house", "accountId": "acc_checking", "categoryId": "cat_housing", "txType": "expense", "status": "posted", "amountMinor": 220000, "date": "2026-05-02", "description": "May Mortgage", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_essential", "tag_recurring"] },
+    { "id": "tx_2026_05_din", "accountId": "acc_card_b", "categoryId": "cat_dining", "txType": "expense", "status": "posted", "amountMinor": 41000, "date": "2026-05-19", "description": "May Dining", "memberId": "mem_sam", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_discretionary"] },
+
+    { "id": "tx_2026_06_sal", "accountId": "acc_checking", "categoryId": "cat_salary", "txType": "income", "status": "posted", "amountMinor": 640000, "date": "2026-06-01", "description": "June Salary", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_recurring"] },
+    { "id": "tx_2026_06_house", "accountId": "acc_checking", "categoryId": "cat_housing", "txType": "expense", "status": "posted", "amountMinor": 220000, "date": "2026-06-02", "description": "June Mortgage", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_essential", "tag_recurring"] },
+    { "id": "tx_2026_06_din", "accountId": "acc_card_b", "categoryId": "cat_dining", "txType": "expense", "status": "posted", "amountMinor": 40000, "date": "2026-06-21", "description": "June Dining", "memberId": "mem_sam", "isShared": false, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_discretionary"] },
+
+    { "id": "tx_2026_07_sal", "accountId": "acc_checking", "categoryId": "cat_salary", "txType": "income", "status": "posted", "amountMinor": 640000, "date": "2026-07-01", "description": "July Salary", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_recurring"] },
+    { "id": "tx_2026_07_house", "accountId": "acc_checking", "categoryId": "cat_housing", "txType": "expense", "status": "posted", "amountMinor": 220000, "date": "2026-07-02", "description": "July Mortgage", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_essential", "tag_recurring"] },
+    { "id": "tx_2026_07_din", "accountId": "acc_card_b", "categoryId": "cat_dining", "txType": "expense", "status": "posted", "amountMinor": 39000, "date": "2026-07-17", "description": "July Dining", "memberId": "mem_sam", "isShared": false, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_discretionary"] },
+
+    { "id": "tx_2026_08_sal", "accountId": "acc_checking", "categoryId": "cat_salary", "txType": "income", "status": "posted", "amountMinor": 645000, "date": "2026-08-01", "description": "August Salary", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_recurring"] },
+    { "id": "tx_2026_08_house", "accountId": "acc_checking", "categoryId": "cat_housing", "txType": "expense", "status": "posted", "amountMinor": 220000, "date": "2026-08-02", "description": "August Mortgage", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_essential", "tag_recurring"] },
+    { "id": "tx_2026_08_groc", "accountId": "acc_card_a", "categoryId": "cat_groceries", "txType": "expense", "status": "posted", "amountMinor": 58000, "date": "2026-08-10", "description": "August Groceries", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_essential"] },
+    { "id": "tx_2026_08_din", "accountId": "acc_card_b", "categoryId": "cat_dining", "txType": "expense", "status": "posted", "amountMinor": 40000, "date": "2026-08-19", "description": "August Dining", "memberId": "mem_sam", "isShared": false, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_discretionary"] },
+
+    { "id": "tx_2026_09_sal", "accountId": "acc_checking", "categoryId": "cat_salary", "txType": "income", "status": "posted", "amountMinor": 645000, "date": "2026-09-01", "description": "September Salary", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_recurring"] },
+    { "id": "tx_2026_09_house", "accountId": "acc_checking", "categoryId": "cat_housing", "txType": "expense", "status": "posted", "amountMinor": 220000, "date": "2026-09-02", "description": "September Mortgage", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_essential", "tag_recurring"] },
+    { "id": "tx_2026_09_groc", "accountId": "acc_card_a", "categoryId": "cat_groceries", "txType": "expense", "status": "posted", "amountMinor": 59000, "date": "2026-09-11", "description": "September Groceries", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_essential"] },
+    { "id": "tx_2026_09_din", "accountId": "acc_card_b", "categoryId": "cat_dining", "txType": "expense", "status": "posted", "amountMinor": 41000, "date": "2026-09-20", "description": "September Dining", "memberId": "mem_sam", "isShared": false, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_discretionary"] },
+
+    { "id": "tx_2026_10_sal", "accountId": "acc_checking", "categoryId": "cat_salary", "txType": "income", "status": "posted", "amountMinor": 520000, "date": "2026-10-01", "description": "October Salary", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_recurring"] },
+    { "id": "tx_2026_10_free", "accountId": "acc_checking", "categoryId": "cat_freelance", "txType": "income", "status": "posted", "amountMinor": 120000, "date": "2026-10-14", "description": "October Consulting", "memberId": "mem_sam", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": [] },
+    { "id": "tx_2026_10_house", "accountId": "acc_checking", "categoryId": "cat_housing", "txType": "expense", "status": "posted", "amountMinor": 220000, "date": "2026-10-02", "description": "October Mortgage", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_essential", "tag_recurring"] },
+    { "id": "tx_2026_10_groc", "accountId": "acc_card_a", "categoryId": "cat_groceries", "txType": "expense", "status": "posted", "amountMinor": 59500, "date": "2026-10-12", "description": "October Groceries", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_essential"] },
+    { "id": "tx_2026_10_din", "accountId": "acc_card_b", "categoryId": "cat_dining", "txType": "expense", "status": "posted", "amountMinor": 42000, "date": "2026-10-20", "description": "October Dining", "memberId": "mem_sam", "isShared": false, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_discretionary"] },
+    { "id": "tx_2026_10_util", "accountId": "acc_checking", "categoryId": "cat_utilities", "txType": "expense", "status": "posted", "amountMinor": 23500, "date": "2026-10-22", "description": "October Utilities", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_essential", "tag_recurring"] },
+    { "id": "tx_2026_10_sink", "accountId": "acc_checking", "categoryId": "cat_sinking_home", "txType": "expense", "status": "posted", "amountMinor": 50000, "date": "2026-10-25", "description": "Home Sinking Transfer", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_recurring"] },
+    { "id": "tx_2026_10_sav", "accountId": "acc_checking", "categoryId": "cat_savings_retire", "txType": "expense", "status": "posted", "amountMinor": 100000, "date": "2026-10-26", "description": "Retirement Contribution", "memberId": "mem_sam", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_recurring"] },
+
+    { "id": "tx_2026_11_sal", "accountId": "acc_checking", "categoryId": "cat_salary", "txType": "income", "status": "posted", "amountMinor": 520000, "date": "2026-11-01", "description": "November Salary", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_recurring"] },
+    { "id": "tx_2026_11_free", "accountId": "acc_checking", "categoryId": "cat_freelance", "txType": "income", "status": "posted", "amountMinor": 130000, "date": "2026-11-10", "description": "November Consulting", "memberId": "mem_sam", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": [] },
+    { "id": "tx_2026_11_house", "accountId": "acc_checking", "categoryId": "cat_housing", "txType": "expense", "status": "posted", "amountMinor": 220000, "date": "2026-11-02", "description": "November Mortgage", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_essential", "tag_recurring"] },
+    { "id": "tx_2026_11_groc_parent", "accountId": "acc_card_a", "categoryId": "cat_groceries", "txType": "expense", "status": "posted", "amountMinor": 62000, "date": "2026-11-08", "description": "Costco Split Parent", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": true, "splitTransactionId": null, "tagIds": ["tag_essential"] },
+    { "id": "tx_2026_11_groc_c1", "accountId": "acc_card_a", "categoryId": "cat_groceries", "txType": "expense", "status": "posted", "amountMinor": 42000, "date": "2026-11-08", "description": "Costco Household Groceries", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": "tx_2026_11_groc_parent", "tagIds": ["tag_essential"] },
+    { "id": "tx_2026_11_groc_c2", "accountId": "acc_card_a", "categoryId": "cat_groceries", "txType": "expense", "status": "posted", "amountMinor": 20000, "date": "2026-11-08", "description": "Costco Specialty Pantry", "memberId": "mem_sam", "isShared": false, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": "tx_2026_11_groc_parent", "tagIds": ["tag_essential"] },
+    { "id": "tx_2026_11_din", "accountId": "acc_card_b", "categoryId": "cat_dining", "txType": "expense", "status": "posted", "amountMinor": 55000, "date": "2026-11-15", "description": "Anniversary & Bistro Dining", "memberId": "mem_sam", "isShared": false, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_discretionary"] },
+    { "id": "tx_2026_11_din_ref", "accountId": "acc_card_b", "categoryId": "cat_dining", "txType": "income", "status": "posted", "amountMinor": 3000, "date": "2026-11-16", "description": "Restaurant Billing Adjustment", "memberId": "mem_sam", "isShared": false, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_discretionary"] },
+    { "id": "tx_2026_11_util", "accountId": "acc_checking", "categoryId": "cat_utilities", "txType": "expense", "status": "posted", "amountMinor": 24000, "date": "2026-11-18", "description": "Fiber Internet & Electric", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_essential", "tag_recurring"] },
+    { "id": "tx_2026_11_sink", "accountId": "acc_checking", "categoryId": "cat_sinking_home", "txType": "expense", "status": "posted", "amountMinor": 50000, "date": "2026-11-20", "description": "Home Maintenance Sinking Fund", "memberId": "mem_alex", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_recurring"] },
+    { "id": "tx_2026_11_sav", "accountId": "acc_checking", "categoryId": "cat_savings_retire", "txType": "expense", "status": "posted", "amountMinor": 100000, "date": "2026-11-21", "description": "Monthly Retirement Contribution", "memberId": "mem_sam", "isShared": true, "transferPairId": null, "hasSplitChildren": false, "splitTransactionId": null, "tagIds": ["tag_recurring"] },
+    { "id": "tx_2026_11_xfer", "accountId": "acc_checking", "categoryId": "cat_transfer", "txType": "transfer", "status": "posted", "amountMinor": 80000, "date": "2026-11-22", "description": "Checking to Savings Transfer", "memberId": "mem_alex", "isShared": true, "transferPairId": "pair_2026_11", "hasSplitChildren": false, "splitTransactionId": null, "tagIds": [] }
+  ],
+  "expected": {
+    "thisMonthNetSankey": {
+      "totalInflowMinor": 650000,
+      "totalOutflowMinor": 508000,
+      "netSavingsMinor": 142000,
+      "excludedTransferMinor": 80000
+    },
+    "thisMonthGrossSankey": {
+      "totalInflowMinor": 653000,
+      "totalOutflowMinor": 511000,
+      "netSavingsMinor": 142000,
+      "excludedTransferMinor": 80000
+    },
+    "diningTrend202611": {
+      "amountMinor": 52000,
+      "rollingAvgMinor": 41000,
+      "priorYearAmountMinor": 39000,
+      "yoyDeltaMinor": 13000,
+      "overageMinor": 12000,
+      "isOverThreshold": true,
+      "isAnomaly": true
+    },
+    "latestNetWorth": {
+      "assetsMinor": 9450000,
+      "liabilitiesMinor": 1550000,
+      "netWorthMinor": 7900000
+    }
+  }
+}

@@ -1,0 +1,31 @@
+name: Critique PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: critique-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  critique:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Critique AI PR Reviewer
+        uses: ajxcodes/critique@bc94991d0f3a8ef1c0671e86dbdaaf32060f6ee0
+        with:
+          fail_on_severity: 'none'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}

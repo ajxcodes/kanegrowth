@@ -1,0 +1,17 @@
+KaneGrowth
+Copyright (c) 2026 KaneGrowth Contributors
+
+This project is licensed under the GNU Affero General Public License v3.0 or later
+(AGPL-3.0-or-later). See LICENSE for the full license text.
+
+Upstream Attribution
+--------------------
+KaneGrowth is built on top of Corvale (https://github.com/RRI-Atharv37/corvale),
+originally authored by Atharv Dewangan and contributors, licensed under
+AGPL-3.0-or-later.
+
+Imported baseline commit: ea75abec4774fb749d7a7c4c8f619ce306168595 (v1.0.4)
+Imported components:
+- LICENSE
+- shared/src/
+- frontend/corvale/ (relocated to apps/web/)
