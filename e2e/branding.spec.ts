@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test'
 
-const DARK = '/icons/kanegrowth_logo_bonsai_dark_transparent.png'
-const LIGHT = '/icons/kanegrowth_logo_bonsai_transparent.png'
+const DARK = '/icons/kanegrowth_logo_gold_green_transparent.png'
+const LIGHT = '/icons/kanegrowth_logo_gold_green_transparent.png'
 
 async function expectLogo(page: Page, src: string) {
   const logo = page.locator('[data-testid="brand-logo-icon"]:visible').first()

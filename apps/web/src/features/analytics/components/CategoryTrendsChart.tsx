@@ -241,7 +241,7 @@ const CategoryTrendsChart: React.FC<CategoryTrendsChartProps> = ({
                         width={barW}
                         height={priorH}
                         rx={3}
-                        fill="#9a92b0"
+                        fill="#9c9583"
                         fillOpacity={0.55}
                       />
                     )}
@@ -252,7 +252,7 @@ const CategoryTrendsChart: React.FC<CategoryTrendsChartProps> = ({
                       width={barW}
                       height={h}
                       rx={3}
-                      fill={point.isAnomaly || point.isOverThreshold ? '#fb7185' : '#a855f7'}
+                      fill={point.isAnomaly || point.isOverThreshold ? '#fb7185' : '#d4af37'}
                       className="cursor-pointer transition-opacity hover:opacity-80"
                       onClick={() =>
                         onDrilldown(
@@ -284,7 +284,7 @@ const CategoryTrendsChart: React.FC<CategoryTrendsChartProps> = ({
                 <path
                   d={rollingPath}
                   fill="none"
-                  stroke="#fbbf24"
+                  stroke="#4ade80"
                   strokeWidth={2.2}
                 />
               )}

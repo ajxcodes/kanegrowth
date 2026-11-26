@@ -31,6 +31,14 @@ describe('PWA config (Sprint 13.8)', () => {
         expect(viteConfig).toContain("registerType: 'prompt'")
     })
 
+    it('precaches the single transparent logo and publishes the evergreen theme colour in the manifest', () => {
+        const viteConfig = readSource('vite.config.ts')
+        expect(viteConfig).toContain("icons/kanegrowth_logo_gold_green_transparent.png")
+        expect(viteConfig).not.toContain("kanegrowth_logo_gold_green_dark_transparent.png")
+        expect(viteConfig).toContain("theme_color: '#0e1512'")
+        expect(viteConfig).toContain("background_color: '#0e1512'")
+    })
+
     it('every manifest icon file referenced in vite.config.ts exists under public/', () => {
         const viteConfig = readSource('vite.config.ts')
         const iconFiles = [...viteConfig.matchAll(/src:\s*'([^']+\.png)'/g)].map((match) => match[1])

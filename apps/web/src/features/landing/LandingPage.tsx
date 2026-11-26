@@ -223,7 +223,7 @@ const Landing: React.FC = () => {
                         aria-hidden="true"
                         style={{
                             background:
-                                'radial-gradient(ellipse 70% 60% at 50% 100%, #9333ea18 0%, transparent 65%)',
+                                'radial-gradient(ellipse 70% 60% at 50% 100%, #d4af3718 0%, transparent 65%)',
                         }}
                     />
                     <div className="relative mx-auto max-w-3xl text-center">
@@ -255,7 +255,7 @@ const Landing: React.FC = () => {
                     aria-hidden="true"
                     style={{
                         background:
-                            'radial-gradient(ellipse 80% 100% at 50% 100%, #9333ea14 0%, transparent 60%)',
+                            'radial-gradient(ellipse 80% 100% at 50% 100%, #d4af3714 0%, transparent 60%)',
                     }}
                 />
                 <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-5 text-center">

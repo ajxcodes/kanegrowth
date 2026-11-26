@@ -8,7 +8,7 @@ import { dirname, resolve } from 'node:path'
 // The visible outcome (dark native scrollbars, no white flash on load, dark form controls /
 // autofill / date pickers) is a browser-paint behaviour that can't run inside this project's
 // Vitest + happy-dom harness. It was verified manually against `vite preview`: no white flash on
-// first load, thin purple-tinted scrollbars in every scroll container, and dark <select> popups
+// first load, thin green-tinted scrollbars in every scroll container, and dark <select> popups
 // on Windows/Chromium.
 //
 // What *can* run here, and is the real regression guard: the static declarations that make the

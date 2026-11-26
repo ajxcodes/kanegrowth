@@ -486,7 +486,7 @@ const Reports = () => {
                                         <div className="mt-4 grid grid-cols-2 gap-3">
                                             <div className="rounded-lg border border-border-subtle bg-surface/50 p-3">
                                                 <p className="text-xs text-fg-muted">Monthly equivalent</p>
-                                                <p className="text-lg font-semibold text-violet-300 mt-1">
+                                                <p className="text-lg font-semibold text-accent mt-1">
                                                     {formatCurrency(recurringTotals.totalMonthlyEquivalent)}
                                                 </p>
                                             </div>
@@ -845,7 +845,7 @@ const BudgetAnalysisSection: React.FC<{ data: BudgetAnalysisReport }> = ({ data 
         <div className="mt-4 grid grid-cols-2 gap-3">
             <div className="rounded-lg border border-border-subtle bg-surface/50 p-3">
                 <p className="text-xs text-fg-muted">Total budgeted</p>
-                <p className="text-lg font-semibold text-violet-300 mt-1">{formatCurrency(data.totalBudgeted)}</p>
+                <p className="text-lg font-semibold text-accent mt-1">{formatCurrency(data.totalBudgeted)}</p>
             </div>
             <div className="rounded-lg border border-border-subtle bg-surface/50 p-3">
                 <p className="text-xs text-fg-muted">Total spent</p>

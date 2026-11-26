@@ -136,15 +136,14 @@ export default defineConfig(({ mode }) => {
       includeAssets: [
         'favicon.ico',
         'apple-touch-icon.png',
-        'icons/kanegrowth_logo_bonsai_transparent.png',
-        'icons/kanegrowth_logo_bonsai_dark_transparent.png',
+        'icons/kanegrowth_logo_gold_green_transparent.png',
       ],
       manifest: {
         name: 'KaneGrowth — Building wealth from good habits at home',
         short_name: 'KaneGrowth',
         description: 'Personal finance tracker — budgets, accounts, transactions and reports that work offline.',
-        theme_color: '#14121c',
-        background_color: '#14121c',
+        theme_color: '#0e1512',
+        background_color: '#0e1512',
         display: 'standalone',
         start_url: '/',
         scope: '/',

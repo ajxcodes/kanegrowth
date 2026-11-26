@@ -258,7 +258,7 @@ export class SqliteAnalyticsAdapter
       id: String(r._id),
       name: String(r.name),
       role: String(r.role ?? 'member'),
-      color: String(r.color ?? '#6366f1'),
+      color: String(r.color ?? '#8a6a12'),
     }))
 
     const recurringRules: RecurringRuleRecord[] = ruleRows.map((r) => {

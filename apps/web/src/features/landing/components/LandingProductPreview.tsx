@@ -34,7 +34,7 @@ const LandingProductPreview: React.FC = () => {
                 className="pointer-events-none absolute -inset-6 rounded-2xl"
                 style={{
                     background:
-                        'radial-gradient(ellipse at 50% 0%, #9333ea22 0%, transparent 65%)',
+                        'radial-gradient(ellipse at 50% 0%, #d4af3722 0%, transparent 65%)',
                 }}
                 aria-hidden="true"
             />
@@ -43,7 +43,7 @@ const LandingProductPreview: React.FC = () => {
                 className="relative rounded-xl border border-border bg-surface-2 overflow-hidden"
                 style={{
                     boxShadow:
-                        '0 24px 48px color-mix(in srgb, #14121c 70%, transparent), 0 0 0 1px color-mix(in srgb, #a855f7 12%, transparent), 0 0 60px color-mix(in srgb, #9333ea 15%, transparent)',
+                        '0 24px 48px color-mix(in srgb, #0e1512 70%, transparent), 0 0 0 1px color-mix(in srgb, #d4af37 12%, transparent), 0 0 60px color-mix(in srgb, #d4af37 15%, transparent)',
                 }}
             >
                 <div className="flex items-center gap-2 border-b border-border-subtle px-4 py-3 bg-elevated">

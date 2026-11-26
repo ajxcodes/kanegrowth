@@ -155,7 +155,7 @@ const NetWorthDebtWorkbench: React.FC<NetWorthDebtWorkbenchProps> = ({
               )
             })}
             <path d={toPath((p) => p.assetsMinor)} fill="none" stroke="#4ade80" strokeWidth={2} />
-            <path d={toPath((p) => p.netWorthMinor)} fill="none" stroke="#a855f7" strokeWidth={2.5} />
+            <path d={toPath((p) => p.netWorthMinor)} fill="none" stroke="#d4af37" strokeWidth={2.5} />
             <path d={toPath((p) => p.liabilitiesMinor)} fill="none" stroke="#fb7185" strokeWidth={2} />
           </svg>
         </div>
