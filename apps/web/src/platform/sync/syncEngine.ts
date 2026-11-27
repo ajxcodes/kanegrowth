@@ -233,7 +233,7 @@ export const startSyncEngine = (): (() => void) => {
     listenersAttached = true
 
     const handleOnline = () => {
-        void syncNow()
+        void syncNow().catch((error) => console.error('[sync] reconnect sync failed:', error))
     }
     window.addEventListener('online', handleOnline)
     const stopBackgroundSyncBridge = startBackgroundSyncBridge(syncNow)

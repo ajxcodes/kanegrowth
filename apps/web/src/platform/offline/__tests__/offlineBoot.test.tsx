@@ -129,7 +129,7 @@ describe('offline boot: fails closed without a valid offline grant', () => {
     })
 
     it('does not authenticate from a cached user when no offline grant was ever stored', async () => {
-        clearOfflineGrant()
+        await clearOfflineGrant()
 
         renderWithProviders(<DashboardProbe />, { withWorkspace: false })
 
@@ -138,7 +138,7 @@ describe('offline boot: fails closed without a valid offline grant', () => {
     })
 
     it('does not authenticate from a cached user when the stored grant has expired', async () => {
-        await storeOfflineGrant(await createTestOfflineGrant(mockUser._id, { expiresInSeconds: -60 }))
+        await storeOfflineGrant(await createTestOfflineGrant(mockUser._id, { expiresInSeconds: -3600 }))
 
         renderWithProviders(<DashboardProbe />, { withWorkspace: false })
 

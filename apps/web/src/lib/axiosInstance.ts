@@ -56,12 +56,7 @@ const isAuthMutationRoute = (url?: string): boolean => {
     )
 }
 
-const shouldAttemptRefresh = (message: unknown): boolean => {
-    if (typeof message !== 'string') return false
-    return message.includes('expired') || message.includes('revoked')
-}
-
-/** Distinct from `shouldAttemptRefresh`'s broader `.includes('revoked')` match - this only fires the offline-recovery flow (`tokenRevokedFlow.ts`) for the backend's exact `TOKEN_REVOKED` message, not any expiry-adjacent wording. */
+/** Distinct from the status-based refresh retry - this only fires the offline-recovery flow (`tokenRevokedFlow.ts`) for the backend's exact `TOKEN_REVOKED` message, not any expiry-adjacent wording. */
 const isTokenRevokedMessage = (message: unknown): boolean =>
     typeof message === 'string' && message.toLowerCase().includes('session revoked')
 
@@ -103,12 +98,15 @@ client.interceptors.response.use(
         const status = error.response?.status
         const message = error.response?.data?.message
 
+        // Reconnect recovery is status-based, not message-based: an offline-restored session has no
+        // access token, so its first authenticated request (e.g. `sync/push`) returns a plain
+        // 401 `{"error":"unauthorized"}`. Attempt exactly one refresh and retry the original
+        // request before giving up on the session.
         if (
             status === 401 &&
             originalRequest &&
             !originalRequest._retry &&
-            !isAuthMutationRoute(originalRequest.url) &&
-            shouldAttemptRefresh(message)
+            !isAuthMutationRoute(originalRequest.url)
         ) {
             if (isRefreshing) {
                 return new Promise((resolve, reject) => {
@@ -145,7 +143,7 @@ client.interceptors.response.use(
                 }
 
                 setAccessToken(newToken)
-                storeOfflineGrant(newOfflineGrant)
+                await storeOfflineGrant(newOfflineGrant)
                 // Only persist a rotated token we actually received - never let an unexpected
                 // empty value wipe a still-usable keychain entry.
                 if (rotatedRefreshToken) {

@@ -222,9 +222,23 @@ pub fn issue_tokens(db: &Db, config: &Config, user_id: &str) -> Result<AuthData,
     .map_err(|e| e.to_string())?;
     drop(conn);
 
+    // Offline session grant (issue #18). Fail-open for online auth: a missing or malformed signing
+    // key leaves `offlineGrant` absent instead of failing the login; the client then fails closed
+    // on offline restore, exactly as before this change.
+    let offline_grant = match crate::offline_grant::issue(config, &user.id) {
+        Ok(grant) => Some(grant),
+        Err(err) => {
+            if config.offline_grant_private_key.is_some() {
+                tracing::error!("offline grant signing failed: {err}");
+            }
+            None
+        }
+    };
+
     Ok(AuthData {
         token: access,
         refresh_token: refresh,
+        offline_grant,
         user,
     })
 }

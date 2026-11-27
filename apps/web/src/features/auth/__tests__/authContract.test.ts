@@ -18,4 +18,8 @@ describe('auth contract', () => {
             parseAuthPayload({ token: 't', user: { email: 'x@y.z' } } as unknown as AuthPayload)
         ).toThrow('Invalid auth response from server')
     })
+
+    it('preserves the offline grant from the shared auth fixture', () => {
+        expect(parseAuthPayload(fixture.auth).offlineGrant).toBe('contract-offline-grant')
+    })
 })

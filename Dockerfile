@@ -15,10 +15,14 @@ ARG VITE_LOCAL_FIRST=true
 ARG VITE_STANDALONE_LOCAL=false
 ARG VITE_API_ORIGIN=
 ARG VITE_API_URL=/api/v1
+# Public half of the ES256 offline-grant keypair (issue #18). Baked into the SPA bundle so the
+# deployed client can verify the server-signed grant it receives; never the private half.
+ARG VITE_OFFLINE_GRANT_PUBLIC_KEY=
 ENV VITE_LOCAL_FIRST=$VITE_LOCAL_FIRST \
     VITE_STANDALONE_LOCAL=$VITE_STANDALONE_LOCAL \
     VITE_API_ORIGIN=$VITE_API_ORIGIN \
-    VITE_API_URL=$VITE_API_URL
+    VITE_API_URL=$VITE_API_URL \
+    VITE_OFFLINE_GRANT_PUBLIC_KEY="$VITE_OFFLINE_GRANT_PUBLIC_KEY"
 
 RUN npm --prefix apps/web run build
 

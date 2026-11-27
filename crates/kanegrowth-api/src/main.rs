@@ -5,6 +5,7 @@ mod entity_map;
 mod migrations;
 mod models;
 mod ntfy;
+mod offline_grant;
 mod sync;
 mod util;
 mod workspaces;
@@ -34,6 +35,11 @@ struct AppState {
 async fn main() {
     tracing_subscriber::fmt::init();
     let config = Config::from_env();
+    if config.offline_grant_private_key.is_none() {
+        tracing::warn!(
+            "KANEGROWTH_OFFLINE_GRANT_PRIVATE_KEY is not configured; auth responses will not carry an offline session grant"
+        );
+    }
     let db = db::open_db(&config.db_path).expect("db open");
     if !config.require_email_verification {
         // Existing accounts predate the renamed `isEmailVerified` field; without this backfill

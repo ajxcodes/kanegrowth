@@ -1,5 +1,6 @@
 mod common;
 use common::*;
+use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
 use serde_json::{json, Value};
 
 #[test]
@@ -482,6 +483,128 @@ fn logout_revokes_refresh_token() {
         .send()
         .unwrap();
     assert_eq!(refr.status().as_u16(), 401);
+    let _ = srv.kill();
+    let _ = srv.wait();
+}
+
+/// Decodes an `offlineGrant` with the shared public key, asserting every required claim and the
+/// exact issuer/audience. Returns the claims so callers can assert rotation.
+fn decode_grant(grant: &str) -> Value {
+    let (_private_key, public_key) = offline_grant_test_keypair();
+    let mut validation = Validation::new(Algorithm::ES256);
+    validation.set_required_spec_claims(&["sub", "iat", "exp", "jti", "iss", "aud"]);
+    validation.set_issuer(&["kanegrowth"]);
+    validation.set_audience(&["kanegrowth-offline"]);
+    let key = DecodingKey::from_ec_pem(public_key.as_bytes()).unwrap();
+    decode::<Value>(grant, &key, &validation).unwrap().claims
+}
+
+#[test]
+fn auth_payloads_carry_a_verifiable_offline_grant() {
+    let db = temp_db("auth_offline_grant");
+    let mut srv = start_server(&db, 18141);
+    wait_health(18141);
+    let client = reqwest::blocking::Client::new();
+
+    let register = client
+        .post("http://127.0.0.1:18141/api/v1/auth/register")
+        .json(
+            &json!({"email":"grant@example.com","password":"Password123!","fullName":"Grant User"}),
+        )
+        .send()
+        .unwrap();
+    assert!(register.status().is_success());
+    let register_v: Value = register.json().unwrap();
+    let user_id = register_v["data"]["user"]["_id"]
+        .as_str()
+        .unwrap()
+        .to_string();
+    let refresh_token = register_v["data"]["refreshToken"]
+        .as_str()
+        .unwrap()
+        .to_string();
+
+    let login = |password: &str| {
+        client
+            .post("http://127.0.0.1:18141/api/v1/auth/login")
+            .json(&json!({"email":"grant@example.com","password":password}))
+            .send()
+            .unwrap()
+            .json::<Value>()
+            .unwrap()
+    };
+    let login_v = login("Password123!");
+    let login_again_v = login("Password123!");
+    let refresh_v = client
+        .post("http://127.0.0.1:18141/api/v1/auth/refresh")
+        .json(&json!({"refreshToken": refresh_token}))
+        .send()
+        .unwrap()
+        .json::<Value>()
+        .unwrap();
+
+    let payloads = [register_v.clone(), login_v, login_again_v, refresh_v];
+    let mut jtis = Vec::new();
+    for payload in &payloads {
+        let grant = payload["data"]["offlineGrant"]
+            .as_str()
+            .unwrap_or_else(|| panic!("missing offlineGrant: {payload:?}"));
+        assert!(!grant.is_empty());
+
+        let claims = decode_grant(grant);
+        assert_eq!(claims["sub"].as_str(), Some(user_id.as_str()));
+        assert_eq!(claims["iss"].as_str(), Some("kanegrowth"));
+        assert_eq!(claims["aud"].as_str(), Some("kanegrowth-offline"));
+        assert!(claims["exp"].as_i64().unwrap() > claims["iat"].as_i64().unwrap());
+        let jti = claims["jti"]
+            .as_str()
+            .unwrap_or_else(|| panic!("missing jti: {claims:?}"));
+        assert!(!jti.is_empty());
+        jtis.push(jti.to_string());
+    }
+
+    jtis.sort();
+    jtis.dedup();
+    assert_eq!(jtis.len(), 4, "grants did not rotate: {jtis:?}");
+
+    let _ = srv.kill();
+    let _ = srv.wait();
+}
+
+#[test]
+fn auth_without_a_configured_signing_key_still_succeeds_without_a_grant() {
+    let db = temp_db("auth_offline_grant_disabled");
+    let mut srv =
+        start_server_with_env(&db, 18142, &[("KANEGROWTH_OFFLINE_GRANT_PRIVATE_KEY", "")]);
+    wait_health(18142);
+    let client = reqwest::blocking::Client::new();
+
+    let register = client
+        .post("http://127.0.0.1:18142/api/v1/auth/register")
+        .json(
+            &json!({"email":"nogrant@example.com","password":"Password123!","fullName":"No Grant"}),
+        )
+        .send()
+        .unwrap();
+    assert!(register.status().is_success());
+    let register_v: Value = register.json().unwrap();
+    assert!(register_v["data"]["token"]
+        .as_str()
+        .is_some_and(|t| !t.is_empty()));
+    assert!(register_v["data"].get("offlineGrant").is_none());
+
+    let login = client
+        .post("http://127.0.0.1:18142/api/v1/auth/login")
+        .json(&json!({"email":"nogrant@example.com","password":"Password123!"}))
+        .send()
+        .unwrap();
+    assert!(login.status().is_success());
+    let login_v: Value = login.json().unwrap();
+    assert!(login_v["data"]["token"]
+        .as_str()
+        .is_some_and(|t| !t.is_empty()));
+    assert!(login_v["data"].get("offlineGrant").is_none());
+
     let _ = srv.kill();
     let _ = srv.wait();
 }

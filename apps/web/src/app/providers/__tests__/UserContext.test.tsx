@@ -6,6 +6,8 @@ import axiosInstance from '@lib/axiosInstance'
 import { SESSION_EXPIRED_EVENT } from '@lib/sessionEvents'
 import { TOKEN_REVOKED_EVENT } from '@lib/tokenRevokedFlow'
 import { API_PATHS } from '@lib/apiPaths'
+import { clearOfflineGrant } from '@lib/offlineGrant'
+import { createTestOfflineGrant } from '@/test/offlineGrantFixture'
 import toast from 'react-hot-toast'
 import type { User } from '@lib/types/api'
 
@@ -55,13 +57,20 @@ const mockUser: User = {
     email: 'jamie@example.com',
 }
 
+const setOnline = (online: boolean): void => {
+    Object.defineProperty(navigator, 'onLine', { value: online, writable: true, configurable: true })
+}
+
 const UserProbe = () => {
     const { user, isAuthenticated, isInitializing } = useUser()
     if (isInitializing) return <div data-testid="init">Initializing</div>
     return <div data-testid="probe">{isAuthenticated ? `authed:${user?.fullName}` : 'guest'}</div>
 }
 
-beforeEach(() => {
+beforeEach(async () => {
+    // Issue #18: a stored grant from a previous case must not leak into the offline-restore test.
+    await clearOfflineGrant()
+    setOnline(true)
     wipeLocalDataMock.mockClear()
     getStoredRefreshTokenMock.mockReset()
     getStoredRefreshTokenMock.mockResolvedValue(null)
@@ -80,6 +89,7 @@ beforeEach(() => {
 
 afterEach(() => {
     vi.clearAllMocks()
+    setOnline(true)
 })
 
 describe('UserContext - SESSION_EXPIRED_EVENT (BUG-07)', () => {
@@ -170,5 +180,33 @@ describe('UserContext - desktop refresh token (SEC-11 / BUG-24)', () => {
 
         await waitFor(() => expect(screen.getByTestId('probe')).toHaveTextContent('guest'))
         expect(clearStoredRefreshTokenMock).toHaveBeenCalled()
+    })
+})
+
+describe('UserContext - offline restore from a server-issued grant (issue #18)', () => {
+    it('restores the cached session offline from a grant issued by the refresh response', async () => {
+        const grant = await createTestOfflineGrant(mockUser._id)
+        vi.mocked(axiosInstance.post).mockImplementation(async (url: string) => {
+            if (url === API_PATHS.AUTH.REFRESH) {
+                return {
+                    success: true,
+                    data: { token: 'test-token', user: mockUser, offlineGrant: grant },
+                }
+            }
+            throw new Error('unused in this suite')
+        })
+
+        const first = renderWithProviders(<UserProbe />, { withWorkspace: false })
+        await waitFor(() => expect(screen.getByTestId('probe')).toHaveTextContent('authed:Jamie Rivera'))
+        first.unmount()
+
+        // Relaunch with no network: the refresh genuinely fails, so only the grant persisted by
+        // the first (online) boot can restore the session.
+        setOnline(false)
+        vi.mocked(axiosInstance.post).mockRejectedValue(new Error('Network Error'))
+
+        renderWithProviders(<UserProbe />, { withWorkspace: false })
+
+        await waitFor(() => expect(screen.getByTestId('probe')).toHaveTextContent('authed:Jamie Rivera'))
     })
 })

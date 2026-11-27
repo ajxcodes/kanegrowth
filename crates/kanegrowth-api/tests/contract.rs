@@ -22,6 +22,12 @@ fn auth_and_workspace_dto_contract() {
     assert!(reg.status().is_success());
     let regv: Value = reg.json().unwrap();
     let token = regv["data"]["token"].as_str().unwrap().to_string();
+    assert!(
+        regv["data"]["offlineGrant"]
+            .as_str()
+            .is_some_and(|grant| !grant.is_empty()),
+        "register payload missing offlineGrant: {regv:?}"
+    );
     let user = regv["data"]["user"].as_object().unwrap();
     for key in fixture_user.keys() {
         assert!(

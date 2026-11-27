@@ -1,6 +1,6 @@
 use std::env;
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 #[allow(dead_code)]
 pub struct Config {
     pub bind: String,
@@ -13,6 +13,42 @@ pub struct Config {
     pub refresh_ttl_days: i64,
     pub require_email_verification: bool,
     pub dev_auth_tokens: bool,
+    /// ES256 private key (PEM) used to sign offline session grants (issue #18). `None` means the
+    /// server issues no grants - online authentication still works, offline restore fails closed.
+    pub offline_grant_private_key: Option<String>,
+    /// Lifetime of an issued offline grant in seconds. Defaults to and is clamped to the
+    /// refresh-token lifetime, so a grant can never outlive the credential it was issued with.
+    pub offline_grant_ttl_secs: i64,
+}
+
+/// Manual `Debug`: the signing key is a secret, so it must never appear in a log line. Every
+/// other field prints verbatim, and a configured key prints only as `Some("<redacted>")`.
+impl std::fmt::Debug for Config {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Config")
+            .field("bind", &self.bind)
+            .field("db_path", &self.db_path)
+            .field("jwt_secret", &self.jwt_secret)
+            .field("cors_origins", &self.cors_origins)
+            .field("ntfy_url", &self.ntfy_url)
+            .field("ntfy_topic", &self.ntfy_topic)
+            .field("access_ttl_secs", &self.access_ttl_secs)
+            .field("refresh_ttl_days", &self.refresh_ttl_days)
+            .field(
+                "require_email_verification",
+                &self.require_email_verification,
+            )
+            .field("dev_auth_tokens", &self.dev_auth_tokens)
+            .field(
+                "offline_grant_private_key",
+                &self
+                    .offline_grant_private_key
+                    .as_ref()
+                    .map(|_| "<redacted>"),
+            )
+            .field("offline_grant_ttl_secs", &self.offline_grant_ttl_secs)
+            .finish()
+    }
 }
 
 impl Config {
@@ -46,7 +82,7 @@ impl Config {
             .ok()
             .and_then(|s| s.parse().ok())
             .unwrap_or(3600);
-        let refresh_ttl_days = env::var("KANEGROWTH_REFRESH_TTL_DAYS")
+        let refresh_ttl_days: i64 = env::var("KANEGROWTH_REFRESH_TTL_DAYS")
             .ok()
             .and_then(|s| s.parse().ok())
             .unwrap_or(30);
@@ -60,6 +96,21 @@ impl Config {
         };
         let require_email_verification = parse_flag("KANEGROWTH_REQUIRE_EMAIL_VERIFICATION");
         let dev_auth_tokens = parse_flag("KANEGROWTH_DEV_AUTH_TOKENS");
+
+        // Offline session grant (issue #18). An empty/absent key means "no grants" - never a
+        // failed login - so a rolling deploy or a missing secret degrades to today's behaviour.
+        let offline_grant_private_key = env::var("KANEGROWTH_OFFLINE_GRANT_PRIVATE_KEY")
+            .or_else(|_| env::var("OFFLINE_GRANT_PRIVATE_KEY"))
+            .ok()
+            .map(|v| v.trim().to_string())
+            .filter(|v| !v.is_empty());
+        let refresh_ttl_secs = refresh_ttl_days * 86_400;
+        let offline_grant_ttl_secs = env::var("KANEGROWTH_OFFLINE_GRANT_TTL_SECS")
+            .ok()
+            .and_then(|s| s.parse::<i64>().ok())
+            .unwrap_or(refresh_ttl_secs)
+            .min(refresh_ttl_secs);
+
         Self {
             bind,
             db_path,
@@ -71,6 +122,8 @@ impl Config {
             refresh_ttl_days,
             require_email_verification,
             dev_auth_tokens,
+            offline_grant_private_key,
+            offline_grant_ttl_secs,
         }
     }
 }

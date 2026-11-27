@@ -164,6 +164,10 @@ pub struct AuthData {
     pub token: String,
     #[serde(rename = "refreshToken")]
     pub refresh_token: String,
+    /// Server-signed ES256 grant the client verifies locally to restore an offline session
+    /// (issue #18). `None` when the server has no signing key configured.
+    #[serde(rename = "offlineGrant", skip_serializing_if = "Option::is_none")]
+    pub offline_grant: Option<String>,
     pub user: UserDto,
 }
 
