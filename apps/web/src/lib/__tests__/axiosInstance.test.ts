@@ -5,16 +5,22 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 // TOKEN_REVOKED_EVENT already covered. This file drives the real response interceptor directly
 // (captured off a mocked `axios.create()`) so the refresh-attempt/no-refresh branches and the
 // SESSION_EXPIRED_EVENT/TOKEN_REVOKED_EVENT dispatch can be asserted without a live HTTP layer.
+//
+// Issue #18: refresh recovery is status-based, so a plain 401 from a sync route (the first request
+// after an offline restore) refreshes once and retries instead of wiping the outbox.
 
-const { interceptors, postMock, getStoredRefreshTokenMock, storeRefreshTokenMock } = vi.hoisted(() => ({
-    interceptors: {
-        request: { use: vi.fn() },
-        response: { use: vi.fn() },
-    },
-    postMock: vi.fn(),
-    getStoredRefreshTokenMock: vi.fn(),
-    storeRefreshTokenMock: vi.fn(),
-}))
+const { interceptors, clientMock, postMock, getStoredRefreshTokenMock, storeRefreshTokenMock, storeOfflineGrantMock } =
+    vi.hoisted(() => ({
+        interceptors: {
+            request: { use: vi.fn() },
+            response: { use: vi.fn() },
+        },
+        clientMock: vi.fn(),
+        postMock: vi.fn(),
+        getStoredRefreshTokenMock: vi.fn(),
+        storeRefreshTokenMock: vi.fn(),
+        storeOfflineGrantMock: vi.fn(),
+    }))
 
 // SEC-11 / BUG-24: on the desktop the refresh token comes from the keychain, rides in the
 // request body, and the rotated one is written back. On the web all three are inert.
@@ -24,9 +30,17 @@ vi.mock('../refreshTokenStore', () => ({
     clearStoredRefreshToken: vi.fn(),
 }))
 
+// Issue #18: a successful refresh rotates the offline grant; the interceptor must persist it.
+vi.mock('../offlineGrant', () => ({
+    storeOfflineGrant: storeOfflineGrantMock,
+}))
+
 vi.mock('axios', async () => {
     const actual = await vi.importActual<typeof import('axios')>('axios')
-    const mockClient = vi.fn() as unknown as { interceptors: typeof interceptors; defaults: Record<string, unknown> }
+    const mockClient = clientMock as unknown as {
+        interceptors: typeof interceptors
+        defaults: Record<string, unknown>
+    }
     mockClient.interceptors = interceptors
     mockClient.defaults = {}
     return {
@@ -59,11 +73,14 @@ describe('axiosInstance response interceptor - session clearing (BUG-07)', () =>
 
     beforeEach(() => {
         setAccessToken('existing-token')
+        clientMock.mockReset()
         postMock.mockReset()
         getStoredRefreshTokenMock.mockReset()
         getStoredRefreshTokenMock.mockResolvedValue(null)
         storeRefreshTokenMock.mockReset()
         storeRefreshTokenMock.mockResolvedValue(undefined)
+        storeOfflineGrantMock.mockReset()
+        storeOfflineGrantMock.mockResolvedValue(undefined)
         dispatchedEventTypes = []
         vi.spyOn(window, 'dispatchEvent').mockImplementation((event: Event) => {
             dispatchedEventTypes.push(event.type)
@@ -101,14 +118,38 @@ describe('axiosInstance response interceptor - session clearing (BUG-07)', () =>
         expect(dispatchedEventTypes).toContain(TOKEN_REVOKED_EVENT)
     })
 
-    it('clears the token and fires SESSION_EXPIRED_EVENT for a plain non-refreshable 401', async () => {
+    it('refreshes a plain 401 from a sync route, retries with the new token, and does not expire the session', async () => {
+        postMock.mockResolvedValue({
+            data: { data: { token: 'new-access', offlineGrant: 'rotated-grant' } },
+        })
+        clientMock.mockResolvedValue({ data: 'ok' })
         const handler = getResponseErrorHandler()
 
-        await expect(handler(makeError(401, 'Not authorized, no token'))).rejects.toBeTruthy()
+        await handler(makeError(401, 'unauthorized', '/sync/push'))
+
+        expect(postMock).toHaveBeenCalledTimes(1)
+        expect(postMock).toHaveBeenCalledWith(
+            expect.stringContaining('/auth/refresh'),
+            {},
+            { withCredentials: true }
+        )
+        expect(clientMock).toHaveBeenCalledTimes(1)
+        const retriedRequest = clientMock.mock.calls[0][0] as {
+            headers: Record<string, string>
+        }
+        expect(retriedRequest.headers.Authorization).toBe('Bearer new-access')
+        expect(storeOfflineGrantMock).toHaveBeenCalledWith('rotated-grant')
+        expect(dispatchedEventTypes).not.toContain(SESSION_EXPIRED_EVENT)
+    })
+
+    it('ends the session when a plain 401 cannot be recovered by a refresh', async () => {
+        postMock.mockRejectedValue(new Error('refresh failed'))
+        const handler = getResponseErrorHandler()
+
+        await expect(handler(makeError(401, 'unauthorized', '/sync/push'))).rejects.toBeTruthy()
 
         expect(getAccessToken()).toBeNull()
         expect(dispatchedEventTypes).toContain(SESSION_EXPIRED_EVENT)
-        expect(postMock).not.toHaveBeenCalled()
     })
 
     it('does not clear the token or fire any session event for a 401 on an auth-mutation route', async () => {

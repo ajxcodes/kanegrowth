@@ -146,7 +146,12 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Start full compose stack
-        run: docker compose up -d --build
+        run: |
+          VITE_OFFLINE_GRANT_PUBLIC_KEY="$(python3 -c 'import json;print(json.load(open("shared/fixtures/contract/offline-grant-test-keypair.json"))["publicKey"])')"
+          export VITE_OFFLINE_GRANT_PUBLIC_KEY
+          KANEGROWTH_OFFLINE_GRANT_PRIVATE_KEY="$(python3 -c 'import json;print(json.load(open("shared/fixtures/contract/offline-grant-test-keypair.json"))["privateKey"])')"
+          export KANEGROWTH_OFFLINE_GRANT_PRIVATE_KEY
+          docker compose up -d --build
 
       - name: Wait for composed frontend
         run: |

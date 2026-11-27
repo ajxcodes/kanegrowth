@@ -78,7 +78,7 @@ const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     const clearUser = useCallback(() => {
         applyUser(null)
         setAccessToken(null)
-        clearOfflineGrant()
+        void clearOfflineGrant()
         // Desktop keychain-held refresh token (SEC-11 / BUG-24); no-op on the web.
         void clearStoredRefreshToken()
     }, [applyUser])
@@ -139,7 +139,7 @@ const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             const payload = parseAuthPayload(response)
             setAccessToken(payload.token)
             applyUser(payload.user)
-            storeOfflineGrant(payload.offlineGrant)
+            await storeOfflineGrant(payload.offlineGrant)
             if (payload.refreshToken) {
                 await storeRefreshToken(payload.refreshToken)
             }
@@ -152,7 +152,8 @@ const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             // network failure and still clears the session normally.
             const offline = !navigator.onLine || isNetworkError(error)
             const cached = offline ? getCachedUser() : null
-            const grantValid = cached ? await verifyOfflineGrant(getStoredOfflineGrant(), cached._id) : false
+            const storedGrant = cached ? await getStoredOfflineGrant() : null
+            const grantValid = cached ? await verifyOfflineGrant(storedGrant, cached._id) : false
 
             if (cached && grantValid) {
                 applyUser(cached)
@@ -253,7 +254,7 @@ export default UserProvider
 /** Called on Login/Signup - the "online sign-in" moment D5's local DB provisioning hooks into. */
 export const setAuthSession = async (payload: AuthPayload): Promise<void> => {
     setAccessToken(payload.token)
-    storeOfflineGrant(payload.offlineGrant)
+    await storeOfflineGrant(payload.offlineGrant)
     // Desktop only (SEC-11 / BUG-24): stash the refresh token in the OS keychain so the session
     // survives past the access-token TTL and across relaunches. No-op on the web.
     await storeRefreshToken(payload.refreshToken)

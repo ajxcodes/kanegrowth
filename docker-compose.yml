@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        VITE_OFFLINE_GRANT_PUBLIC_KEY: ${VITE_OFFLINE_GRANT_PUBLIC_KEY:-}
     ports:
       - "8080:8080"
     environment:
@@ -10,6 +12,8 @@ services:
       KANEGROWTH_DB_PATH: "/data/kanegrowth.db"
       KANEGROWTH_JWT_SECRET: "change-me-in-production"
       KANEGROWTH_CORS_ORIGINS: "http://localhost:8080"
+      # Runtime secret (never a build arg): the private half of the offline-grant keypair.
+      KANEGROWTH_OFFLINE_GRANT_PRIVATE_KEY: ${KANEGROWTH_OFFLINE_GRANT_PRIVATE_KEY:-}
     volumes:
       - kanegrowth-data:/data
     restart: unless-stopped
