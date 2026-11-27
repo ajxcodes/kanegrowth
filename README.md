@@ -38,6 +38,9 @@ cargo test --workspace
 npm run test:e2e
 ```
 
+CI runs the same root suites as a required gate on every PR, alongside the compose-stack
+auth-sync spec: see [docs/testing.md](docs/testing.md).
+
 ## Self-Hosted Web UI (Docker)
 
 ```bash

@@ -8,6 +8,8 @@ export default defineConfig({
   },
   fullyParallel: false,
   retries: process.env.CI ? 1 : 0,
+  forbidOnly: !!process.env.CI,
+  workers: process.env.CI ? 1 : undefined,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL: 'http://127.0.0.1:4173',
