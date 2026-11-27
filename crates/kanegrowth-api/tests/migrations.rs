@@ -13,7 +13,7 @@ fn migrations_initialize_cleanly() {
     let v: i64 = conn
         .query_row("PRAGMA user_version;", [], |r| r.get(0))
         .unwrap();
-    assert_eq!(v, 6);
+    assert_eq!(v, 7);
     let _ = srv.kill();
     let _ = srv.wait();
 }
@@ -58,7 +58,7 @@ fn migrations_persist_across_reopen() {
     let v: i64 = conn
         .query_row("PRAGMA user_version;", [], |r| r.get(0))
         .unwrap();
-    assert_eq!(v, 6);
+    assert_eq!(v, 7);
     let count: i64 = conn
         .query_row(
             "SELECT COUNT(*) FROM users WHERE email='p@example.com'",

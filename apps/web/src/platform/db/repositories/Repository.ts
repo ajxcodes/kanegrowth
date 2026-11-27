@@ -61,6 +61,7 @@ export type SyncableTableName =
   | 'categorizationRules'
   | 'savingsGoalContributions'
   | 'transactionTemplates'
+  | 'envelopeAssignments'
 
 export interface SyncableRecord {
   _id: string
@@ -119,6 +120,8 @@ const PROMOTED_COLUMNS: Record<SyncableTableName, readonly string[]> = {
   categorizationRules: ['userId', 'categoryId', 'accountId', 'priority', 'isActive'],
   savingsGoalContributions: ['userId', 'goalId', 'amount', 'contributedAt'],
   transactionTemplates: ['userId', 'name'],
+  // Migration 0007 envelope/ zero-based budgeting; kind/envelopeId/amountMinor NOT NULL, defaults applied.
+  envelopeAssignments: ['userId', 'workspaceId', 'kind', 'envelopeId', 'month', 'amountMinor'],
 }
 
 /** Mirrors the Mongoose schema defaults for promoted fields that are optional on the wire but NOT NULL locally. */
@@ -138,6 +141,9 @@ const PROMOTED_COLUMN_DEFAULTS: Readonly<Record<string, unknown>> = {
   isShared: true,
   hasSplitChildren: false,
   tagsJson: '[]',
+  kind: 'assignment',
+  envelopeId: '',
+  amountMinor: 0,
 }
 
 /** SQLite has no boolean type; promoted boolean fields (isArchived, isActive) store as 0/1. */

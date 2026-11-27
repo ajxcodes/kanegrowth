@@ -11,6 +11,8 @@ const MIGRATION_0004: &str =
 const MIGRATION_0005: &str =
     include_str!("../../../apps/web/src/platform/db/migrations/sql/0005_analytics_extensions.sql");
 const MIGRATION_0006: &str = include_str!("../migrations/0006_server_auth_sync.sql");
+const MIGRATION_0007: &str =
+    include_str!("../../../apps/web/src/platform/db/migrations/sql/0007_envelope_assignments.sql");
 
 const MIGRATIONS: &[(i64, &str)] = &[
     (1, MIGRATION_0001),
@@ -19,6 +21,7 @@ const MIGRATIONS: &[(i64, &str)] = &[
     (4, MIGRATION_0004),
     (5, MIGRATION_0005),
     (6, MIGRATION_0006),
+    (7, MIGRATION_0007),
 ];
 
 pub fn run_migrations(conn: &Connection) -> Result<(), String> {

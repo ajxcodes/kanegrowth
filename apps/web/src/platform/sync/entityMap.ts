@@ -16,6 +16,7 @@ export const ENTITY_TO_TABLE = {
     categorizationRule: 'categorizationRules',
     savingsGoalContribution: 'savingsGoalContributions',
     transactionTemplate: 'transactionTemplates',
+    envelopeAssignment: 'envelopeAssignments',
 } as const satisfies Record<string, SyncableTableName>
 
 export type SyncEntityName = keyof typeof ENTITY_TO_TABLE

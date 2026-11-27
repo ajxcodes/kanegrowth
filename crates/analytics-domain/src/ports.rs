@@ -4,8 +4,10 @@ use crate::model::{LedgerSnapshot, TransactionRecord};
 
 /// Driven Port: reads ledger snapshots and drill-down transactions from persistence.
 pub trait AnalyticsLedgerPort {
-    fn load_ledger_snapshot(&self, filter: &AnalyticsFilter)
-        -> Result<LedgerSnapshot, AnalyticsError>;
+    fn load_ledger_snapshot(
+        &self,
+        filter: &AnalyticsFilter,
+    ) -> Result<LedgerSnapshot, AnalyticsError>;
 
     fn list_drilldown_transactions(
         &self,

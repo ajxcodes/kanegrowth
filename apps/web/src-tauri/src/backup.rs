@@ -30,7 +30,11 @@ fn dialog_filter(filename: &str) -> Option<(&'static str, &'static str)> {
 /// Tauri shell, where a webview doesn't turn the `<a download>` blob-URL trick into an OS save
 /// prompt. Returns `false` (not an error) when the user cancels the dialog.
 #[tauri::command]
-pub async fn save_file(app: AppHandle, filename: String, contents_base64: String) -> Result<bool, String> {
+pub async fn save_file(
+    app: AppHandle,
+    filename: String,
+    contents_base64: String,
+) -> Result<bool, String> {
     let bytes = base64::engine::general_purpose::STANDARD
         .decode(contents_base64.as_bytes())
         .map_err(|e| e.to_string())?;
@@ -73,7 +77,10 @@ mod tests {
 
     #[test]
     fn maps_known_extensions_case_insensitively() {
-        assert_eq!(dialog_filter("kanegrowth-backup.json"), Some(("JSON", "json")));
+        assert_eq!(
+            dialog_filter("kanegrowth-backup.json"),
+            Some(("JSON", "json"))
+        );
         assert_eq!(dialog_filter("report.CSV"), Some(("CSV", "csv")));
         assert_eq!(dialog_filter("report.Pdf"), Some(("PDF", "pdf")));
         assert_eq!(dialog_filter("backup.zip"), Some(("ZIP archive", "zip")));

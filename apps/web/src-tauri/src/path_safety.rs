@@ -22,7 +22,9 @@ pub fn sanitize_db_filename(filename: &str) -> Result<(), String> {
     // (Windows drive prefixes like "C:evil.db", which `Path::is_absolute()` does NOT catch since
     // a drive-relative path has no root, plus NTFS alternate-data-stream markers).
     if filename.contains(['/', '\\', '\0', ':']) {
-        return Err("Database filename must not contain path separators or drive markers".to_string());
+        return Err(
+            "Database filename must not contain path separators or drive markers".to_string(),
+        );
     }
     if Path::new(filename).is_absolute() {
         return Err("Database filename must not be an absolute path".to_string());

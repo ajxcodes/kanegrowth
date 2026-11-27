@@ -85,7 +85,7 @@ const AppRoutes = () => {
                 <Route path="/dashboard" element={<Home />} />
                 <Route path="/transactions" element={<Transactions />} />
                 <Route path="/transactions/import" element={<ImportTransactions />} />
-                <Route path="/income" element={<Navigate to="/transactions?type=income" replace />} />
+                <Route path="/income" element={<Budgets addIncome />} />
                 <Route path="/expense" element={<Navigate to="/transactions?type=expense" replace />} />
                 <Route path="/saver" element={<Saver />} />
                 <Route path="/pushover" element={<Pushover />} />

@@ -188,7 +188,10 @@ mod tests {
         );
         assert_eq!(
             net_sankey.excluded_transfer_minor,
-            fixture.expected.this_month_net_sankey.excluded_transfer_minor
+            fixture
+                .expected
+                .this_month_net_sankey
+                .excluded_transfer_minor
         );
 
         let mut gross_filter = net_filter.clone();
@@ -212,7 +215,10 @@ mod tests {
             .iter()
             .find(|p| p.period == "2026-11" && p.category_id == "cat_dining")
             .unwrap();
-        assert_eq!(dining.amount_minor, fixture.expected.dining_trend202611.amount_minor);
+        assert_eq!(
+            dining.amount_minor,
+            fixture.expected.dining_trend202611.amount_minor
+        );
         assert_eq!(
             dining.rolling_avg_minor,
             fixture.expected.dining_trend202611.rolling_avg_minor
@@ -233,14 +239,20 @@ mod tests {
             dining.is_over_threshold,
             fixture.expected.dining_trend202611.is_over_threshold
         );
-        assert_eq!(dining.is_anomaly, fixture.expected.dining_trend202611.is_anomaly);
+        assert_eq!(
+            dining.is_anomaly,
+            fixture.expected.dining_trend202611.is_anomaly
+        );
 
         // 3. Net Worth & Debt Payoff matches canonical fixture latest net worth
         let nw = use_cases
             .get_net_worth_projection(&trends_filter, &DebtPayoffOptions::default())
             .unwrap();
         let latest = nw.timeline.last().unwrap();
-        assert_eq!(latest.assets_minor, fixture.expected.latest_net_worth.assets_minor);
+        assert_eq!(
+            latest.assets_minor,
+            fixture.expected.latest_net_worth.assets_minor
+        );
         assert_eq!(
             latest.liabilities_minor,
             fixture.expected.latest_net_worth.liabilities_minor

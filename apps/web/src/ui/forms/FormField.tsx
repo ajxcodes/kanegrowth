@@ -11,6 +11,8 @@ interface FormFieldProps {
     min?: string
     max?: string
     step?: string
+    /** Optional `data-testid` forwarded to the underlying `<input>`. */
+    testId?: string
 }
 
 const FormField: React.FC<FormFieldProps> = ({
@@ -24,6 +26,7 @@ const FormField: React.FC<FormFieldProps> = ({
     min,
     max,
     step,
+    testId,
 }) => {
     const inputId = useId()
     return (
@@ -44,6 +47,7 @@ const FormField: React.FC<FormFieldProps> = ({
                     min={min}
                     max={max}
                     step={step}
+                    data-testid={testId}
                     className="w-full bg-transparent outline-none placeholder:text-fg-muted"
                 />
             </div>

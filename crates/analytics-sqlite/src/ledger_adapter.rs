@@ -21,11 +21,15 @@ impl<'a> SqliteAnalyticsAdapter<'a> {
     fn load_transaction_tags(&self) -> Result<HashMap<String, Vec<String>>, AnalyticsError> {
         let mut stmt = self
             .conn
-            .prepare("SELECT transactionId, tagId FROM transaction_tags ORDER BY transactionId, tagId")
+            .prepare(
+                "SELECT transactionId, tagId FROM transaction_tags ORDER BY transactionId, tagId",
+            )
             .map_err(|e| AnalyticsError::Storage(e.to_string()))?;
         let mut map: HashMap<String, Vec<String>> = HashMap::new();
         let rows = stmt
-            .query_map([], |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)))
+            .query_map([], |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+            })
             .map_err(|e| AnalyticsError::Storage(e.to_string()))?;
         for r in rows {
             let (tx_id, tag_id) = r.map_err(|e| AnalyticsError::Storage(e.to_string()))?;
@@ -312,9 +316,8 @@ impl<'a> AnalyticsLedgerPort for SqliteAnalyticsAdapter<'a> {
                     let data_json: String = row.get(4)?;
                     let v = serde_json::from_str::<serde_json::Value>(&data_json)
                         .unwrap_or(serde_json::Value::Null);
-                    let tx_type = TxType::parse(
-                        v.get("type").and_then(|t| t.as_str()).unwrap_or("expense"),
-                    );
+                    let tx_type =
+                        TxType::parse(v.get("type").and_then(|t| t.as_str()).unwrap_or("expense"));
                     let amount_minor = v
                         .get("amountMinor")
                         .or_else(|| v.get("amount"))

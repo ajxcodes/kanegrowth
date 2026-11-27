@@ -148,6 +148,8 @@ pub struct BootstrapSnapshot {
     pub savings_goal_contributions: Vec<Value>,
     #[serde(rename = "transactionTemplates")]
     pub transaction_templates: Vec<Value>,
+    #[serde(rename = "envelopeAssignments", default)]
+    pub envelope_assignments: Vec<Value>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

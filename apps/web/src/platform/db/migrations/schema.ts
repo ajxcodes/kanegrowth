@@ -4,6 +4,7 @@ import localDomainEntitiesSql from './sql/0002_local_domain_entities.sql?raw'
 import transactionTemplatesSql from './sql/0003_transaction_templates.sql?raw'
 import receiptsSql from './sql/0004_receipts.sql?raw'
 import analyticsExtensionsSql from './sql/0005_analytics_extensions.sql?raw'
+import envelopeAssignmentsSql from './sql/0007_envelope_assignments.sql?raw'
 
 /**
  * The app's real, versioned schema history. Each entry's `up` runs the
@@ -41,6 +42,12 @@ export const MIGRATIONS: Migration[] = [
     version: 5,
     up: async (tx) => {
       await tx.exec(analyticsExtensionsSql)
+    },
+  },
+  {
+    version: 7,
+    up: async (tx) => {
+      await tx.exec(envelopeAssignmentsSql)
     },
   },
 ]

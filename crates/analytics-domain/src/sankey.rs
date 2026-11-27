@@ -111,9 +111,11 @@ pub fn compute_cash_flow_sankey(
         if amt > 0 {
             cleaned_outflows.push((cat_id, label, kind, amt, count));
         } else if amt < 0 {
-            let entry = income_by_cat
-                .entry(format!("{cat_id}__credit"))
-                .or_insert((format!("{label} (Net Credit)"), 0, 0));
+            let entry = income_by_cat.entry(format!("{cat_id}__credit")).or_insert((
+                format!("{label} (Net Credit)"),
+                0,
+                0,
+            ));
             entry.1 += -amt;
             entry.2 += count;
         }
@@ -493,7 +495,9 @@ mod tests {
 
         // 3. Zero-income month emits explicit deficit source node summing to outflows with zero NaN
         let mut deficit_snapshot = snapshot.clone();
-        deficit_snapshot.transactions.retain(|t| t.tx_type == TxType::Expense);
+        deficit_snapshot
+            .transactions
+            .retain(|t| t.tx_type == TxType::Expense);
         let mut deficit_filter = AnalyticsFilter::default_for("2026-11-25");
         deficit_filter.date_range_preset = DateRangePreset::ThisMonth;
         let deficit_graph = compute_cash_flow_sankey(&deficit_snapshot, &deficit_filter).unwrap();

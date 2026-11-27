@@ -34,7 +34,9 @@ pub fn compute_net_worth_and_debt(
     let filtered_accounts: Vec<&AccountRecord> = snapshot
         .accounts
         .iter()
-        .filter(|a| filter.account_ids.is_empty() || filter.account_ids.iter().any(|id| id == &a.id))
+        .filter(|a| {
+            filter.account_ids.is_empty() || filter.account_ids.iter().any(|id| id == &a.id)
+        })
         .collect();
 
     // Map per-account net monthly delta for transactions in each month
@@ -85,10 +87,14 @@ pub fn compute_net_worth_and_debt(
             let bal = running_balances.get(&acc.id).copied().unwrap_or(0).max(0);
             if acc.is_liability {
                 liabilities_minor += bal;
-                *by_group.entry(acc.account_group.as_str().to_string()).or_insert(0) -= bal;
+                *by_group
+                    .entry(acc.account_group.as_str().to_string())
+                    .or_insert(0) -= bal;
             } else {
                 assets_minor += bal;
-                *by_group.entry(acc.account_group.as_str().to_string()).or_insert(0) += bal;
+                *by_group
+                    .entry(acc.account_group.as_str().to_string())
+                    .or_insert(0) += bal;
             }
 
             // Step backwards to prior month end
@@ -123,44 +129,51 @@ pub fn compute_net_worth_and_debt(
         })
         .collect();
 
-    let (snowball, avalanche, interest_saved_by_avalanche_minor, extra_payment_interest_saved_minor, warning) =
-        match compare_debt_payoff_strategies(&debt_inputs, options, &filter.as_of_date) {
-            Ok(cmp) => (
-                cmp.snowball,
-                cmp.avalanche,
-                cmp.interest_saved_by_avalanche_minor,
-                cmp.extra_payment_interest_saved_minor,
-                None,
-            ),
-            Err(AnalyticsError::NonAmortizingDebt(msg)) => {
-                let empty_summary = |strategy| DebtPayoffSummary {
-                    strategy,
-                    target_order: debt_inputs.iter().map(|d| d.id.clone()).collect(),
-                    debt_free_months: 0,
-                    debt_free_date: filter.as_of_date.get(0..7).unwrap_or("2026-01").to_string(),
-                    total_interest_paid_minor: 0,
-                    total_paid_minor: 0,
-                    baseline_interest_minor: 0,
-                    interest_saved_vs_minimum_minor: 0,
-                    schedule: vec![],
-                };
-                (
-                    empty_summary(PayoffStrategy::Snowball),
-                    empty_summary(PayoffStrategy::Avalanche),
-                    0,
-                    0,
-                    Some(msg),
-                )
-            }
-            Err(e) => return Err(e),
-        };
+    let (
+        snowball,
+        avalanche,
+        interest_saved_by_avalanche_minor,
+        extra_payment_interest_saved_minor,
+        warning,
+    ) = match compare_debt_payoff_strategies(&debt_inputs, options, &filter.as_of_date) {
+        Ok(cmp) => (
+            cmp.snowball,
+            cmp.avalanche,
+            cmp.interest_saved_by_avalanche_minor,
+            cmp.extra_payment_interest_saved_minor,
+            None,
+        ),
+        Err(AnalyticsError::NonAmortizingDebt(msg)) => {
+            let empty_summary = |strategy| DebtPayoffSummary {
+                strategy,
+                target_order: debt_inputs.iter().map(|d| d.id.clone()).collect(),
+                debt_free_months: 0,
+                debt_free_date: filter.as_of_date.get(0..7).unwrap_or("2026-01").to_string(),
+                total_interest_paid_minor: 0,
+                total_paid_minor: 0,
+                baseline_interest_minor: 0,
+                interest_saved_vs_minimum_minor: 0,
+                schedule: vec![],
+            };
+            (
+                empty_summary(PayoffStrategy::Snowball),
+                empty_summary(PayoffStrategy::Avalanche),
+                0,
+                0,
+                Some(msg),
+            )
+        }
+        Err(e) => return Err(e),
+    };
 
     // Forward-looking net worth projection using active recurring rules + avalanche debt schedule
     let monthly_recurring_net: i64 = snapshot
         .recurring_rules
         .iter()
         .filter(|r| r.is_active)
-        .filter(|r| filter.account_ids.is_empty() || filter.account_ids.iter().any(|id| id == &r.account_id))
+        .filter(|r| {
+            filter.account_ids.is_empty() || filter.account_ids.iter().any(|id| id == &r.account_id)
+        })
         .map(|r| match r.tx_type {
             TxType::Income => r.amount_minor.abs(),
             TxType::Expense => -r.amount_minor.abs(),

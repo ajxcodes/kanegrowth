@@ -42,7 +42,10 @@ pub fn compute_category_trends(
         let Some(cat) = cat_map.get(tx.category_id.as_str()).copied() else {
             continue;
         };
-        if matches!(cat.envelope_type, EnvelopeType::Income | EnvelopeType::Transfer) {
+        if matches!(
+            cat.envelope_type,
+            EnvelopeType::Income | EnvelopeType::Transfer
+        ) {
             continue;
         }
         let ym = match tx.date.get(0..7) {
@@ -67,7 +70,10 @@ pub fn compute_category_trends(
     // Ensure filtered categories appear even if 0 in selected range
     for cid in &filter.category_ids {
         if let Some(cat) = cat_map.get(cid.as_str()).copied() {
-            if !matches!(cat.envelope_type, EnvelopeType::Income | EnvelopeType::Transfer) {
+            if !matches!(
+                cat.envelope_type,
+                EnvelopeType::Income | EnvelopeType::Transfer
+            ) {
                 active_categories.insert(cat.id.clone(), cat);
             }
         }

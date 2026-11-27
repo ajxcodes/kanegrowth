@@ -94,14 +94,12 @@ impl AnalyticsFilter {
                 Ok((start, end))
             }
             DateRangePreset::Custom => {
-                let start = self
-                    .start_date
-                    .clone()
-                    .ok_or_else(|| AnalyticsError::InvalidFilter("custom range requires startDate".into()))?;
-                let end = self
-                    .end_date
-                    .clone()
-                    .ok_or_else(|| AnalyticsError::InvalidFilter("custom range requires endDate".into()))?;
+                let start = self.start_date.clone().ok_or_else(|| {
+                    AnalyticsError::InvalidFilter("custom range requires startDate".into())
+                })?;
+                let end = self.end_date.clone().ok_or_else(|| {
+                    AnalyticsError::InvalidFilter("custom range requires endDate".into())
+                })?;
                 let _ = parse_ymd(&start)?;
                 let _ = parse_ymd(&end)?;
                 if start > end {
@@ -129,12 +127,16 @@ impl AnalyticsFilter {
         if !self.account_ids.is_empty() && !self.account_ids.iter().any(|id| id == &tx.account_id) {
             return false;
         }
-        if !self.category_ids.is_empty() && !self.category_ids.iter().any(|id| id == &tx.category_id)
+        if !self.category_ids.is_empty()
+            && !self.category_ids.iter().any(|id| id == &tx.category_id)
         {
             return false;
         }
         if !self.tag_ids.is_empty()
-            && !self.tag_ids.iter().any(|tid| tx.tag_ids.iter().any(|t| t == tid))
+            && !self
+                .tag_ids
+                .iter()
+                .any(|tid| tx.tag_ids.iter().any(|t| t == tid))
         {
             return false;
         }

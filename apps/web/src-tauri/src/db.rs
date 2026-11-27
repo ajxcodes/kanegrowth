@@ -104,11 +104,13 @@ pub fn db_open(app: AppHandle, state: State<DbState>, filename: String) -> Resul
         .map_err(to_sql_error)?;
     // SQLCipher only reports a wrong/half-applied key on first access — force one now so an
     // unreadable file surfaces here (→ frontend recovery gate) instead of on the first real query.
-    conn.query_row("SELECT count(*) FROM sqlite_master", [], |row| row.get::<_, i64>(0))
-        .map_err(|_| {
-            "the local database could not be opened with this device's key (it may be corrupted)"
-                .to_string()
-        })?;
+    conn.query_row("SELECT count(*) FROM sqlite_master", [], |row| {
+        row.get::<_, i64>(0)
+    })
+    .map_err(|_| {
+        "the local database could not be opened with this device's key (it may be corrupted)"
+            .to_string()
+    })?;
 
     *state.0.lock().map_err(to_sql_error)? = Some(conn);
     Ok(())
@@ -142,7 +144,10 @@ fn file_starts_with_plaintext_magic(path: &Path) -> std::io::Result<bool> {
 }
 
 fn sidecar(path: &Path, suffix: &str) -> std::path::PathBuf {
-    let name = path.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
+    let name = path
+        .file_name()
+        .map(|n| n.to_string_lossy().into_owned())
+        .unwrap_or_default();
     path.with_file_name(format!("{name}{suffix}"))
 }
 
@@ -183,7 +188,9 @@ fn migrate_plaintext_store(path: &Path, key_hex: &str) -> Result<(), String> {
         let check = Connection::open(&tmp).map_err(to_sql_error)?;
         apply_page_key(&check, key_hex)?;
         check
-            .query_row("SELECT count(*) FROM sqlite_master", [], |row| row.get::<_, i64>(0))
+            .query_row("SELECT count(*) FROM sqlite_master", [], |row| {
+                row.get::<_, i64>(0)
+            })
             .map_err(|_| {
                 let _ = std::fs::remove_file(&tmp);
                 "the re-encrypted local database failed its verification read".to_string()
@@ -242,8 +249,10 @@ pub fn db_set_key(state: State<DbState>, passphrase: String, salt: Vec<u8>) -> R
 
     conn.execute_batch(&format!("PRAGMA key = \"x'{hex_key}'\";"))
         .map_err(to_sql_error)?;
-    conn.query_row("SELECT count(*) FROM sqlite_master", [], |row| row.get::<_, i64>(0))
-        .map_err(|_| "Incorrect PIN, or the local database is corrupted".to_string())?;
+    conn.query_row("SELECT count(*) FROM sqlite_master", [], |row| {
+        row.get::<_, i64>(0)
+    })
+    .map_err(|_| "Incorrect PIN, or the local database is corrupted".to_string())?;
     Ok(())
 }
 
@@ -260,7 +269,8 @@ pub fn db_exec(state: State<DbState>, sql: String, params: Vec<JsonValue>) -> Re
     } else {
         let bind: Vec<SqlValue> = params.iter().map(json_to_sql_value).collect();
         let bind_refs: Vec<&dyn ToSql> = bind.iter().map(|v| v as &dyn ToSql).collect();
-        conn.execute(&sql, bind_refs.as_slice()).map_err(to_sql_error)?;
+        conn.execute(&sql, bind_refs.as_slice())
+            .map_err(to_sql_error)?;
     }
     Ok(())
 }
@@ -323,7 +333,11 @@ fn remove_local_db_files(dir: &std::path::Path, filename: &str) -> std::io::Resu
 /// so this only loses changes made offline and never pushed. `filename` is validated exactly as
 /// `db_open` validates it (SEC-06).
 #[tauri::command]
-pub fn db_reset_file(app: AppHandle, state: State<DbState>, filename: String) -> Result<(), String> {
+pub fn db_reset_file(
+    app: AppHandle,
+    state: State<DbState>,
+    filename: String,
+) -> Result<(), String> {
     crate::path_safety::sanitize_db_filename(&filename)?;
 
     // Drop the handle before unlinking so Windows (which locks open files) can remove it.
@@ -494,7 +508,9 @@ mod encryption_migration_tests {
 
         // ...a keyless open cannot read it...
         let plainless = Connection::open(&path).unwrap();
-        assert!(plainless.query_row("SELECT count(*) FROM t", [], |r| r.get::<_, i64>(0)).is_err());
+        assert!(plainless
+            .query_row("SELECT count(*) FROM t", [], |r| r.get::<_, i64>(0))
+            .is_err());
 
         // ...and every row survives when opened under the key.
         let keyed = Connection::open(&path).unwrap();
@@ -560,13 +576,21 @@ mod db_reset_file_tests {
     #[test]
     fn removes_the_database_file_and_both_sidecars() {
         let dir = TempDir::new("all-three");
-        for name in ["kanegrowth.sqlite3", "kanegrowth.sqlite3-wal", "kanegrowth.sqlite3-shm"] {
+        for name in [
+            "kanegrowth.sqlite3",
+            "kanegrowth.sqlite3-wal",
+            "kanegrowth.sqlite3-shm",
+        ] {
             std::fs::write(dir.0.join(name), b"x").unwrap();
         }
 
         super::remove_local_db_files(&dir.0, "kanegrowth.sqlite3").unwrap();
 
-        for name in ["kanegrowth.sqlite3", "kanegrowth.sqlite3-wal", "kanegrowth.sqlite3-shm"] {
+        for name in [
+            "kanegrowth.sqlite3",
+            "kanegrowth.sqlite3-wal",
+            "kanegrowth.sqlite3-shm",
+        ] {
             assert!(!dir.0.join(name).exists(), "{name} should be gone");
         }
     }
@@ -605,7 +629,11 @@ mod legacy_data_dir_tests {
     /// legacy file into place and returns `true`. Never overwrites an existing new-identifier
     /// database (a second, later launch must not clobber data written since the first migration),
     /// and returns `false` (not an error) when there's nothing to migrate.
-    fn copy_legacy_db_if_missing(new_dir: &Path, legacy_dir: &Path, filename: &str) -> std::io::Result<bool> {
+    fn copy_legacy_db_if_missing(
+        new_dir: &Path,
+        legacy_dir: &Path,
+        filename: &str,
+    ) -> std::io::Result<bool> {
         super::copy_legacy_db_if_missing(new_dir, legacy_dir, filename)
     }
 
@@ -650,7 +678,8 @@ mod legacy_data_dir_tests {
         std::fs::create_dir_all(&legacy_dir).unwrap();
         std::fs::write(legacy_dir.join("spndr.sqlite3"), b"legacy-db-bytes").unwrap();
 
-        let copied = copy_legacy_db_if_missing(&new_dir, &legacy_dir, "kanegrowth.sqlite3").unwrap();
+        let copied =
+            copy_legacy_db_if_missing(&new_dir, &legacy_dir, "kanegrowth.sqlite3").unwrap();
 
         assert!(copied);
         let migrated = std::fs::read(new_dir.join("kanegrowth.sqlite3")).unwrap();
@@ -669,7 +698,8 @@ mod legacy_data_dir_tests {
         std::fs::write(new_dir.join("kanegrowth.sqlite3"), b"current-db-bytes").unwrap();
         std::fs::write(legacy_dir.join("spndr.sqlite3"), b"legacy-db-bytes").unwrap();
 
-        let copied = copy_legacy_db_if_missing(&new_dir, &legacy_dir, "kanegrowth.sqlite3").unwrap();
+        let copied =
+            copy_legacy_db_if_missing(&new_dir, &legacy_dir, "kanegrowth.sqlite3").unwrap();
 
         assert!(!copied);
         let untouched = std::fs::read(new_dir.join("kanegrowth.sqlite3")).unwrap();
@@ -685,7 +715,8 @@ mod legacy_data_dir_tests {
         // legacy_dir exists but has no spndr.sqlite3 in it (e.g. a fresh install, never
         // installed pre-rename, or the legacy identifier's dir belongs to an unrelated app).
 
-        let copied = copy_legacy_db_if_missing(&new_dir, &legacy_dir, "kanegrowth.sqlite3").unwrap();
+        let copied =
+            copy_legacy_db_if_missing(&new_dir, &legacy_dir, "kanegrowth.sqlite3").unwrap();
 
         assert!(!copied);
         assert!(!new_dir.join("kanegrowth.sqlite3").exists());
@@ -698,7 +729,8 @@ mod legacy_data_dir_tests {
         let legacy_dir = base.0.join("com.spndr.app");
         // Deliberately not created - simulates a user who never had the pre-rename app installed.
 
-        let copied = copy_legacy_db_if_missing(&new_dir, &legacy_dir, "kanegrowth.sqlite3").unwrap();
+        let copied =
+            copy_legacy_db_if_missing(&new_dir, &legacy_dir, "kanegrowth.sqlite3").unwrap();
 
         assert!(!copied);
     }

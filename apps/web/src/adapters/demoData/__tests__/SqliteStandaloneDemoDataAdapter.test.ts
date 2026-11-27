@@ -72,4 +72,22 @@ describe('SqliteStandaloneDemoDataAdapter integration against MemorySqliteDriver
       await db.close()
     }
   })
+
+  // TR-43e
+  it('clearDemoData also wipes envelopeAssignments', async () => {
+    const db = await createMigratedDb()
+    try {
+      await db.exec(
+        `INSERT INTO envelopeAssignments (_id, userId, workspaceId, kind, envelopeId, month, amountMinor, data, updatedAt, _localUpdatedAt, _dirty, _syncState)
+         VALUES ('ea1', 'u1', NULL, 'assignment', 'food', '2027-01', 5000, '{}', '2027-01-01T00:00:00.000Z', '2027-01-01T00:00:00.000Z', 0, 'synced')`
+      )
+      expect(await count(db, 'envelopeAssignments')).toBe(1)
+      const adapter = new SqliteStandaloneDemoDataAdapter(db)
+      await adapter.clearDemoData()
+      expect(await count(db, 'envelopeAssignments')).toBe(0) // DEMO_DATA_TABLES includes 'envelopeAssignments'
+      expect(await count(db, '_schema_version')).toBe(1) // migration ledger retained
+    } finally {
+      await db.close()
+    }
+  })
 })

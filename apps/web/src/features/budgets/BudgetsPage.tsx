@@ -10,6 +10,11 @@ import FormField from '@ui/forms/FormField'
 import CategoryPicker from '@features/categories/components/CategoryPicker'
 import BudgetProgressBar from './components/BudgetProgressBar'
 import AccountMultiSelect from './components/AccountMultiSelect'
+import AddIncomeDialog from './components/AddIncomeDialog'
+import EnvelopeTable from './components/EnvelopeTable'
+import ReadyToAssignBar from './components/ReadyToAssignBar'
+import { useEnvelopeLedger } from './hooks/useEnvelopeLedger'
+import { DEFAULT_TIMEZONE } from '@shared/timezone'
 import { usePageSize } from '@/app/hooks/usePaginatedList'
 import { useUser } from '@/app/providers/useUser'
 import { useWorkspace } from '@/app/providers/useWorkspace'
@@ -141,9 +146,9 @@ const budgetToForm = (budget: Budget): BudgetFormData => {
     }
 }
 
-const Budgets = () => {
+const Budgets = ({ addIncome }: { addIncome?: boolean }) => {
     const { user } = useUser()
-    const { canEdit, isPersonal, activeWorkspace } = useWorkspace()
+    const { canEdit, isPersonal, activeWorkspace, activeWorkspaceId } = useWorkspace()
     const preferredCurrency = user?.preferredCurrency ?? DEFAULT_CURRENCY
     const pageSize = usePageSize()
     const [view, setView] = useState<BudgetView>('active')
@@ -154,6 +159,11 @@ const Budgets = () => {
     const [submitting, setSubmitting] = useState(false)
     const [archiveTarget, setArchiveTarget] = useState<Budget | null>(null)
     const [archiving, setArchiving] = useState(false)
+    const [addIncomeOpen, setAddIncomeOpen] = useState(false)
+    const [month, setMonth] = useState(() => {
+        const now = new Date()
+        return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`
+    })
 
     const {
         budgets,
@@ -166,6 +176,28 @@ const Budgets = () => {
         updateBudget,
         archiveBudget,
     } = useBudgetsData(view)
+
+    // ── Envelope / zero-based budgeting (coexists with unchanged caps below) ───────────────────
+    const timezone = user?.timezone?.trim() || DEFAULT_TIMEZONE
+    const {
+        view: envelopeView,
+        assign: assignEnvelope,
+        moveAllocation: moveEnvelopeAllocation,
+        closeMonth: closeEnvelopeMonth,
+        reopenMonth: reopenEnvelopeMonth,
+        migrateCapToEnvelopeTarget: migrateCap,
+        recordIncome,
+    } = useEnvelopeLedger({ month, workspaceId: activeWorkspaceId ?? null, timezone })
+
+    // `/income` mounts `<Budgets addIncome />`, opening the Add Income / Paycheck dialog.
+    React.useEffect(() => {
+        if (addIncome) setAddIncomeOpen(true)
+    }, [addIncome])
+
+    const envelopeChoices = useMemo(
+        () => (envelopeView?.envelopes ?? []).map((e) => ({ envelopeId: e.envelopeId, name: e.name, envelopeType: e.envelopeType })),
+        [envelopeView]
+    )
 
     const displayedBudgets = useMemo(() => {
         if (!budgets) return []
@@ -443,6 +475,16 @@ const Budgets = () => {
                 }
                 actions={
                     canEdit ? (
+                        <>
+                        <button
+                            type="button"
+                            data-testid="add-income-button"
+                            onClick={() => setAddIncomeOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-border text-fg-secondary hover:border-border transition-colors"
+                        >
+                            <IoAdd size={18} />
+                            Add Income / Paycheck
+                        </button>
                         <button
                             type="button"
                             onClick={openCreate}
@@ -451,6 +493,7 @@ const Budgets = () => {
                             <IoAdd size={18} />
                             Create budget
                         </button>
+                        </>
                     ) : undefined
                 }
             />
@@ -482,6 +525,28 @@ const Budgets = () => {
                     History
                 </button>
             </div>
+
+            {/* Envelope / zero-based budgeting */}
+            <section className="mb-6 space-y-3">
+                <h2 className="text-sm font-semibold text-fg">Envelopes</h2>
+                <ReadyToAssignBar
+                    readyToAssignMinor={envelopeView?.readyToAssignMinor ?? 0}
+                    incomeThisMonthMinor={envelopeView?.incomeThisMonthMinor ?? 0}
+                    assignedThisMonthMinor={envelopeView?.assignedThisMonthMinor ?? 0}
+                    currency={preferredCurrency}
+                    warnings={envelopeView?.warnings ?? []}
+                />
+                <EnvelopeTable
+                    view={envelopeView}
+                    currency={preferredCurrency}
+                    month={month}
+                    onMonthChange={setMonth}
+                    onAssign={async (envelopeId, amountMinor) => { await assignEnvelope({ envelopeId, month, amountMinor, onOverAssignment: 'confirm', allowOverAssign: true }) }}
+                    onMoveAllocation={async (from, to, amountMinor) => { await moveEnvelopeAllocation({ fromEnvelopeId: from, toEnvelopeId: to, month, amountMinor }) }}
+                    onCloseMonth={async () => { await closeEnvelopeMonth({ month }) }}
+                    onReopenMonth={async () => { await reopenEnvelopeMonth({ month }) }}
+                />
+            </section>
 
             <AsyncContent
                 loading={loading}
@@ -568,6 +633,16 @@ const Budgets = () => {
                                         </div>
                                         {!budget.isArchived && view === 'active' && canEdit && (
                                             <div className="flex items-center gap-1 shrink-0">
+                                                {budget.categoryId && (
+                                                    <button
+                                                        type="button"
+                                                        data-testid="migrate-cap-button"
+                                                        onClick={() => void migrateCap(budget._id)}
+                                                        className="px-2 py-1 text-[11px] rounded-md border border-border text-fg-secondary hover:border-accent hover:text-accent transition-colors"
+                                                    >
+                                                        Convert to envelope target
+                                                    </button>
+                                                )}
                                                 <button
                                                     type="button"
                                                     onClick={() => openEdit(budget)}
@@ -663,6 +738,18 @@ const Budgets = () => {
                 message={`Archive "${archiveTarget?.name ?? 'this budget'}"? It will move to history.`}
                 confirmLabel="Archive"
                 loading={archiving}
+            />
+
+            <AddIncomeDialog
+                open={addIncomeOpen}
+                onClose={() => setAddIncomeOpen(false)}
+                accounts={accounts ?? []}
+                envelopes={envelopeChoices}
+                preferredCurrency={preferredCurrency}
+                userId={user?._id ?? ''}
+                workspaceId={activeWorkspaceId ?? null}
+                timezone={timezone}
+                recordIncome={recordIncome}
             />
         </div>
     )
