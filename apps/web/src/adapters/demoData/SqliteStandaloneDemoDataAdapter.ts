@@ -34,6 +34,7 @@ const DEMO_DATA_TABLES = [
   '_conflicts',
   '_blobs',
   '_receipt_uploads',
+  'envelopeAssignments',
 ] as const
 
 /**

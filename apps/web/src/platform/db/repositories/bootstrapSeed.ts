@@ -17,6 +17,7 @@ const REPOSITORIES: Record<SeedableField, Repository<SyncableRecord>> = {
   categorizationRules: new Repository('categorizationRules' as SyncableTableName),
   savingsGoalContributions: new Repository('savingsGoalContributions' as SyncableTableName),
   transactionTemplates: new Repository('transactionTemplates' as SyncableTableName),
+  envelopeAssignments: new Repository('envelopeAssignments' as SyncableTableName),
 }
 
 /**

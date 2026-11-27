@@ -9,6 +9,7 @@ pub const ENTITY_TABLES: &[(&str, &str)] = &[
     ("categorizationRule", "categorizationRules"),
     ("savingsGoalContribution", "savingsGoalContributions"),
     ("transactionTemplate", "transactionTemplates"),
+    ("envelopeAssignment", "envelopeAssignments"),
 ];
 
 pub fn table_for_entity(entity: &str) -> Option<&'static str> {
@@ -49,6 +50,7 @@ pub fn all_entities() -> &'static [&'static str] {
         "categorizationRule",
         "savingsGoalContribution",
         "transactionTemplate",
+        "envelopeAssignment",
     ]
 }
 
@@ -64,6 +66,7 @@ pub fn all_tables() -> &'static [&'static str] {
         "categorizationRules",
         "savingsGoalContributions",
         "transactionTemplates",
+        "envelopeAssignments",
     ]
 }
 
@@ -129,6 +132,14 @@ pub fn promoted_columns(table: &str) -> &'static [&'static str] {
         "categorizationRules" => &["userId", "categoryId", "accountId", "priority", "isActive"],
         "savingsGoalContributions" => &["userId", "goalId", "amount", "contributedAt"],
         "transactionTemplates" => &["userId", "name"],
+        "envelopeAssignments" => &[
+            "userId",
+            "workspaceId",
+            "kind",
+            "envelopeId",
+            "month",
+            "amountMinor",
+        ],
         _ => &[],
     }
 }
@@ -140,7 +151,7 @@ mod tests {
     fn entity_table_roundtrip() {
         assert_eq!(table_for_entity("account"), Some("accounts"));
         assert_eq!(entity_for_table("accounts"), Some("account"));
-        assert_eq!(all_tables().len(), 10);
+        assert_eq!(all_tables().len(), 11);
         assert!(promoted_columns("accounts").contains(&"currentBalance"));
     }
     #[test]

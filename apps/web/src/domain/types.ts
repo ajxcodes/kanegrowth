@@ -63,6 +63,13 @@ export interface LocalCategory extends SyncableRecord {
   name: string
   color?: string
   isArchived: boolean
+  /** Envelope type (`@domain/analytics/types` `EnvelopeType`; promoted column, migration 0005).
+   * Envelope = non-archived category with `envelopeType ∈ {expense, sinking_fund, savings}`;
+   * `'income' | 'transfer'` are not envelopes. Absent is treated as `'expense'`. */
+  envelopeType?: string
+  /** Monthly target in integer minor units (promoted column, migration 0005); envelope `targetMinor`.
+   * Cap→envelope-target migration (`@domain/envelope` `migrateCapToEnvelopeTarget`) writes it. */
+  monthlyTargetMinor?: number
 }
 
 export interface LocalBudget extends SyncableRecord {
@@ -150,4 +157,31 @@ export interface LocalTransactionTemplate extends SyncableRecord {
   categoryId: string
   tags?: string[]
   description?: string
+}
+
+/**
+ * Syncable envelope assignment (migration `0007_envelope_assignments.sql`, table `envelopeAssignments`,
+ * singular sync entity `envelopeAssignment`). See `@domain/envelope` for the rule set.
+ * `kind='assignment'`: at most one row per `(workspaceId, envelopeId, month)`; re-allocation updates it.
+ * `kind='monthClose'`: at most one per `(workspaceId, month)`, `envelopeId=''`, `amountMinor=0`.
+ */
+export interface LocalEnvelopeAssignment extends SyncableRecord {
+  userId: string
+  workspaceId?: string | null
+  kind: 'assignment' | 'monthClose'
+  /** Category id; `''` for `kind='monthClose'`. */
+  envelopeId: string
+  /** `'YYYY-MM'`. */
+  month: string
+  /** Integer minor; may be negative (re-allocation); `0` for `kind='monthClose'`. */
+  amountMinor: number
+  currency: string
+  source: 'manual' | 'income_split' | 'reallocate' | 'month_close'
+  note?: string
+  /** Income transaction id for `source='income_split'`. */
+  linkedTransactionId?: string | null
+  /** `kind='monthClose'` audit snapshot (`@domain/envelope` `EnvelopeMonthSnapshot` JSON). */
+  snapshotJson?: string | null
+  /** `kind='monthClose'` ISO time. */
+  closedAt?: string | null
 }

@@ -118,6 +118,11 @@ fn apply_defaults(table: &str, values: &mut std::collections::BTreeMap<String, V
         "transactionTemplates" => {
             set_if_missing(values, "name", json!(""));
         }
+        "envelopeAssignments" => {
+            set_if_missing(values, "kind", json!("assignment"));
+            set_if_missing(values, "envelopeId", json!(""));
+            set_if_missing(values, "amountMinor", json!(0));
+        }
         _ => {}
     }
 }
@@ -378,6 +383,7 @@ pub fn bootstrap(
         categorization_rules: vec![],
         savings_goal_contributions: vec![],
         transaction_templates: vec![],
+        envelope_assignments: vec![],
     };
 
     // map entity -> field
@@ -392,6 +398,7 @@ pub fn bootstrap(
         ("categorizationRule", "categorizationRules"),
         ("savingsGoalContribution", "savingsGoalContributions"),
         ("transactionTemplate", "transactionTemplates"),
+        ("envelopeAssignment", "envelopeAssignments"),
     ];
 
     let mut all_cursor: Vec<(String, String)> = Vec::new();
@@ -421,6 +428,7 @@ pub fn bootstrap(
             "categorizationRules" => snap.categorization_rules = arr,
             "savingsGoalContributions" => snap.savings_goal_contributions = arr,
             "transactionTemplates" => snap.transaction_templates = arr,
+            "envelopeAssignments" => snap.envelope_assignments = arr,
             _ => {}
         }
     }

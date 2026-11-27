@@ -29,8 +29,9 @@ pub fn run_migrations(conn: &Connection) -> Result<(), AnalyticsError> {
 
     for &(version, sql) in MIGRATIONS {
         if version > current_version {
-            conn.execute_batch(sql)
-                .map_err(|e| AnalyticsError::Storage(format!("migration v{version} failed: {e}")))?;
+            conn.execute_batch(sql).map_err(|e| {
+                AnalyticsError::Storage(format!("migration v{version} failed: {e}"))
+            })?;
             conn.execute_batch(&format!("PRAGMA user_version = {version};"))
                 .map_err(|e| AnalyticsError::Storage(e.to_string()))?;
         }

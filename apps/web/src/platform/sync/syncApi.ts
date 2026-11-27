@@ -19,6 +19,8 @@ export interface BootstrapSyncSnapshot {
     categorizationRules: SyncableRecord[]
     savingsGoalContributions: SyncableRecord[]
     transactionTemplates: SyncableRecord[]
+    /** Migration 0007 envelope assignments; absent on older backends. */
+    envelopeAssignments?: SyncableRecord[]
 }
 
 export const fetchBootstrapSnapshot = async (

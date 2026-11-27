@@ -138,7 +138,11 @@ fn simulate_single(
             if balances[i] <= 0 || remaining_budget <= 0 {
                 continue;
             }
-            let min_pay = debt.minimum_payment_minor.max(0).min(balances[i]).min(remaining_budget);
+            let min_pay = debt
+                .minimum_payment_minor
+                .max(0)
+                .min(balances[i])
+                .min(remaining_budget);
             balances[i] -= min_pay;
             remaining_budget -= min_pay;
             month_paid += min_pay;

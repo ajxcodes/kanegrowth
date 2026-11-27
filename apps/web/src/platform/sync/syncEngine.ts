@@ -7,12 +7,12 @@ import { createOutbox, type Outbox, type OutboxOp, type OutboxOperation, type Pu
 import { createSqliteOutboxStore } from './sqliteOutboxStore'
 import { runPullLoop } from './pullLoop'
 import { recordConflict, listUnresolvedConflicts } from './conflicts'
-import { parseOutboxEntity, type SyncEntityName } from './entityMap'
+import { ENTITY_TO_TABLE, parseOutboxEntity, type SyncEntityName } from './entityMap'
 import { registerBackgroundSync, startBackgroundSyncBridge } from '../pwa/backgroundSync'
 
 const LAST_SYNCED_KEY = 'lastSyncedAt'
 
-const SYNCABLE_TABLES = [
+export const SYNCABLE_TABLES = [
     'accounts',
     'transactions',
     'categories',
@@ -23,6 +23,7 @@ const SYNCABLE_TABLES = [
     'categorizationRules',
     'savingsGoalContributions',
     'transactionTemplates',
+    'envelopeAssignments',
 ] as const
 
 let outboxInstance: Outbox | null = null
@@ -62,6 +63,17 @@ const buildPushFn = (db: LocalDb) => async (ops: OutboxOp[]): Promise<PushResult
             localData: op.payload,
             serverData: result.conflict.serverDoc as never,
         })
+    }
+
+    // Mark applied ops' local rows synced (_dirty=0, _syncState='synced') - pull can later reconcile.
+    for (const result of response.results) {
+        if (result.status !== 'applied' && result.status !== 'noop') continue
+        const op = ops.find((candidate) => candidate.opId === result.opId)
+        if (!op) continue
+        const { entityType, recordId } = parseOutboxEntity(op.entity)
+        const table = ENTITY_TO_TABLE[entityType as SyncEntityName]
+        if (!table || !recordId) continue
+        await db.exec(`UPDATE ${table} SET _syncState = 'synced', _dirty = 0 WHERE _id = ?`, [recordId])
     }
 
     return response.results.map((result) => ({
