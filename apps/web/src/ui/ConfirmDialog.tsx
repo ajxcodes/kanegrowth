@@ -9,6 +9,7 @@ interface ConfirmDialogProps {
     message: string
     confirmLabel?: string
     loading?: boolean
+    confirmTestId?: string
 }
 
 const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -19,6 +20,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     message,
     confirmLabel = 'Delete',
     loading = false,
+    confirmTestId,
 }) => (
     <Modal open={open} onClose={onClose} title={title} size="sm">
         <p className="text-sm text-fg-muted mb-6">{message}</p>
@@ -35,6 +37,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                 type="button"
                 onClick={onConfirm}
                 disabled={loading}
+                data-testid={confirmTestId}
                 className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-destructive text-on-accent hover:bg-destructive/90 transition-colors disabled:opacity-50"
             >
                 {loading ? 'Deleting...' : confirmLabel}

@@ -14,6 +14,7 @@ import type {
 } from '@domain/analytics/types'
 import type { AnalyticsUseCasePort } from '@ports/analytics/AnalyticsUseCasePort'
 import { createAnalyticsService } from '@adapters/analytics/createAnalyticsService'
+import { tableInvalidationBus } from '@lib/tableInvalidationBus'
 import { STANDALONE_FIXTURE_META } from '@platform/db/repositories/analyticsSeed'
 
 export interface UseAnalyticsDataOptions {
@@ -113,6 +114,17 @@ export const useAnalyticsData = (options?: UseAnalyticsDataOptions) => {
 
   useEffect(() => {
     void refresh()
+  }, [refresh])
+
+  // The analytics service reads the local ledger directly (not via `useLocalQuery`), so a
+  // clear/reset of the standalone demo data would otherwise leave mounted charts stale.
+  useEffect(() => {
+    const unsubscribers = ['accounts', 'transactions', 'categories', 'tags', 'household_members'].map(
+      (table) => tableInvalidationBus.subscribe(table, () => void refresh())
+    )
+    return () => {
+      for (const unsubscribe of unsubscribers) unsubscribe()
+    }
   }, [refresh])
 
   const openDrilldown = useCallback(
