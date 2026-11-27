@@ -38,6 +38,16 @@ export interface UseEnvelopeLedgerResult {
 const TABLES = ['envelopeAssignments', 'transactions', 'categories', 'budgets'] as const
 
 /**
+ * Local writes must always be attributed to the signed-in user. A missing id used to be coerced
+ * to `''`, which SQLite accepts (`userId TEXT NOT NULL`) but leaves the row permanently orphaned.
+ * Fail closed instead: the route guard prevents this path while unauthenticated.
+ */
+export const requireEnvelopeUserId = (userId: string | undefined | null): string => {
+  if (!userId) throw new Error('Not authenticated')
+  return userId
+}
+
+/**
  * Wraps `createEnvelopeLedgerService()`; `useLocalQuery(['envelopeAssignments','transactions','categories','budgets'], …getMonthView…)`.
  * No SQL in React. `tableInvalidationBus` invalidation drives refetch.
  */
@@ -47,7 +57,7 @@ export const useEnvelopeLedger = (options: UseEnvelopeLedgerOptions): UseEnvelop
   const { activeWorkspaceId } = useWorkspace()
   const workspaceId = options.workspaceId !== undefined ? options.workspaceId : activeWorkspaceId ?? null
   const timezone = options.timezone ?? user?.timezone?.trim() ?? DEFAULT_TIMEZONE
-  const userId = user?._id ?? ''
+  const userId = user?._id
 
   const serviceRef = useRef<Promise<EnvelopeLedgerPort> | null>(null)
   const getService = useCallback((): Promise<EnvelopeLedgerPort> => {
@@ -72,32 +82,32 @@ export const useEnvelopeLedger = (options: UseEnvelopeLedgerOptions): UseEnvelop
   }, [month, workspaceId, timezone, (accountIds ?? []).join(',')])
 
   const assign = useCallback<UseEnvelopeLedgerResult['assign']>(
-    async (input) => (await getService()).assign({ ...input, workspaceId: input.workspaceId ?? workspaceId, userId, timezone }),
+    async (input) => (await getService()).assign({ ...input, workspaceId: input.workspaceId ?? workspaceId, userId: requireEnvelopeUserId(userId), timezone }),
     [getService, workspaceId, userId, timezone]
   )
 
   const moveAllocation = useCallback<UseEnvelopeLedgerResult['moveAllocation']>(
-    async (input) => (await getService()).moveAllocation({ ...input, workspaceId: input.workspaceId ?? workspaceId, userId, timezone }),
+    async (input) => (await getService()).moveAllocation({ ...input, workspaceId: input.workspaceId ?? workspaceId, userId: requireEnvelopeUserId(userId), timezone }),
     [getService, workspaceId, userId, timezone]
   )
 
   const closeMonth = useCallback<UseEnvelopeLedgerResult['closeMonth']>(
-    async (input) => (await getService()).closeMonth({ month: input?.month ?? month, workspaceId, userId, timezone }),
+    async (input) => (await getService()).closeMonth({ month: input?.month ?? month, workspaceId, userId: requireEnvelopeUserId(userId), timezone }),
     [getService, month, workspaceId, userId, timezone]
   )
 
   const reopenMonth = useCallback<UseEnvelopeLedgerResult['reopenMonth']>(
-    async (input) => (await getService()).reopenMonth({ month: input?.month ?? month, workspaceId, userId, timezone }),
+    async (input) => (await getService()).reopenMonth({ month: input?.month ?? month, workspaceId, userId: requireEnvelopeUserId(userId), timezone }),
     [getService, month, workspaceId, userId, timezone]
   )
 
   const migrateCapToEnvelopeTarget = useCallback<UseEnvelopeLedgerResult['migrateCapToEnvelopeTarget']>(
-    async (budgetId) => (await getService()).migrateCapToEnvelopeTarget({ budgetId, workspaceId, userId }),
+    async (budgetId) => (await getService()).migrateCapToEnvelopeTarget({ budgetId, workspaceId, userId: requireEnvelopeUserId(userId) }),
     [getService, workspaceId, userId]
   )
 
   const recordIncome = useCallback<UseEnvelopeLedgerResult['recordIncome']>(
-    async (input) => (await getService()).recordIncome({ ...input, workspaceId: input.workspaceId ?? workspaceId, userId, timezone }),
+    async (input) => (await getService()).recordIncome({ ...input, workspaceId: input.workspaceId ?? workspaceId, userId: requireEnvelopeUserId(userId), timezone }),
     [getService, workspaceId, userId, timezone]
   )
 

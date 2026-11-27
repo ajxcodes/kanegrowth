@@ -260,6 +260,20 @@ fn upsert_record(
         None => None,
     };
 
+    let cols = crate::db::table_columns(conn, table);
+    // A stale client may send `"userId": ""` (the pre-fix login shape produced exactly that).
+    // Promote the authenticated subject instead, without ever overwriting a real id.
+    let effective_user_id = if cols.contains(&"userId".to_string()) {
+        record
+            .get("userId")
+            .and_then(|x| x.as_str())
+            .filter(|s| !s.trim().is_empty())
+            .map(|s| s.to_string())
+            .unwrap_or_else(|| user_id.to_string())
+    } else {
+        user_id.to_string()
+    };
+
     let mut rec = record.clone();
     if rec.get("updatedAt").is_none() {
         rec["updatedAt"] = json!(updated_at.clone());
@@ -269,9 +283,18 @@ fn upsert_record(
     } else {
         // keep as is
     }
+    if cols.contains(&"userId".to_string()) {
+        let blank = rec
+            .get("userId")
+            .and_then(|x| x.as_str())
+            .map(|s| s.trim().is_empty())
+            .unwrap_or(true);
+        if blank {
+            rec["userId"] = json!(effective_user_id);
+        }
+    }
     let data = serde_json::to_string(&rec).map_err(|e| e.to_string())?;
 
-    let cols = crate::db::table_columns(conn, table);
     let mut values: std::collections::BTreeMap<String, Value> = std::collections::BTreeMap::new();
     for c in &cols {
         values.insert(c.clone(), Value::Null);
@@ -302,12 +325,7 @@ fn upsert_record(
         values.insert("_syncState".into(), json!("synced"));
     }
     if cols.contains(&"userId".to_string()) {
-        let v = record
-            .get("userId")
-            .and_then(|x| x.as_str())
-            .map(|s| s.to_string())
-            .unwrap_or_else(|| user_id.to_string());
-        values.insert("userId".into(), json!(v));
+        values.insert("userId".into(), json!(effective_user_id));
     }
     if cols.contains(&"workspaceId".to_string()) {
         let v = workspace_id.map(|s| s.to_string()).or_else(|| {

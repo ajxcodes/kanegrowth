@@ -179,6 +179,63 @@ fn push_delete_always_applies() {
 }
 
 #[test]
+fn empty_user_id_is_repaired_on_push() {
+    let db = temp_db("sync_empty_user");
+    let mut srv = start_server(&db, 18138);
+    wait_health(18138);
+    let client = reqwest::blocking::Client::new();
+    let reg = client
+        .post("http://127.0.0.1:18138/api/v1/auth/register")
+        .json(&json!({"email":"stale@example.com","password":"Password123!","fullName":"Stale"}))
+        .send()
+        .unwrap();
+    let regv: serde_json::Value = reg.json().unwrap();
+    let token = regv["data"]["token"].as_str().unwrap().to_string();
+    let user_id = regv["data"]["user"]["_id"].as_str().unwrap().to_string();
+
+    let op = json!({
+        "opId": "op-empty-user",
+        "entity": "account",
+        "operation": "create",
+        "payload": {
+            "_id": "acc-empty-user",
+            "userId": "",
+            "name": "Cash",
+            "type": "bank",
+            "currency": "USD",
+            "updatedAt": "2026-11-27T00:00:00Z"
+        }
+    });
+    let pushed = client
+        .post("http://127.0.0.1:18138/api/v1/sync/push")
+        .bearer_auth(&token)
+        .json(&json!({"ops":[op]}))
+        .send()
+        .unwrap();
+    let pushedv: serde_json::Value = pushed.json().unwrap();
+    assert_eq!(
+        pushedv["data"]["results"][0]["status"].as_str(),
+        Some("applied")
+    );
+
+    let pulled = client
+        .get("http://127.0.0.1:18138/api/v1/sync/pull")
+        .bearer_auth(&token)
+        .send()
+        .unwrap();
+    let pulledv: serde_json::Value = pulled.json().unwrap();
+    let changes = pulledv["data"]["changes"].as_array().unwrap();
+    let record = changes
+        .iter()
+        .find(|c| c["doc"]["_id"].as_str() == Some("acc-empty-user"))
+        .expect("pushed account is returned on pull");
+    assert_eq!(record["doc"]["userId"].as_str(), Some(user_id.as_str()));
+
+    let _ = srv.kill();
+    let _ = srv.wait();
+}
+
+#[test]
 fn pull_cursor_pagination_and_tombstones() {
     let db = temp_db("sync_pull");
     let mut srv = start_server(&db, 18115);

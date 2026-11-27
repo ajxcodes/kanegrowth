@@ -13,7 +13,23 @@ fn migrations_initialize_cleanly() {
     let v: i64 = conn
         .query_row("PRAGMA user_version;", [], |r| r.get(0))
         .unwrap();
-    assert_eq!(v, 7);
+    assert_eq!(v, 8);
+    let user_columns: Vec<String> = {
+        let mut stmt = conn.prepare("PRAGMA table_info(users)").unwrap();
+        let rows = stmt.query_map([], |r| r.get::<_, String>(1)).unwrap();
+        rows.filter_map(|r| r.ok()).collect()
+    };
+    assert!(user_columns.iter().any(|c| c == "settings"));
+    for table in ["password_reset_tokens", "email_verification_tokens"] {
+        let count: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name = ?1",
+                [table],
+                |r| r.get(0),
+            )
+            .unwrap();
+        assert_eq!(count, 1, "missing table {table}");
+    }
     let _ = srv.kill();
     let _ = srv.wait();
 }
@@ -58,7 +74,7 @@ fn migrations_persist_across_reopen() {
     let v: i64 = conn
         .query_row("PRAGMA user_version;", [], |r| r.get(0))
         .unwrap();
-    assert_eq!(v, 7);
+    assert_eq!(v, 8);
     let count: i64 = conn
         .query_row(
             "SELECT COUNT(*) FROM users WHERE email='p@example.com'",
