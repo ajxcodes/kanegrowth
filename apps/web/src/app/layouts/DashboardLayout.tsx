@@ -53,6 +53,7 @@ import LoadingState from '@ui/LoadingState'
 import ProfileSettings from '@features/settings/components/ProfileSettings'
 import TransactionTemplatesSettings from '@features/settings/components/TransactionTemplatesSettings'
 import BackupRestoreSettings from '@features/settings/components/BackupRestoreSettings'
+import StandaloneDemoDataSettings from '@features/settings/components/StandaloneDemoDataSettings'
 import DeleteAccountSettings from '@features/settings/components/DeleteAccountSettings'
 import PrivacyDataSettings from '@features/settings/components/PrivacyDataSettings'
 import ExchangeRatesSettings from '@features/settings/components/ExchangeRatesSettings'
@@ -476,6 +477,7 @@ const DashboardLayout: React.FC = () => {
                     <TransactionTemplatesSettings />
                     <ExchangeRatesSettings />
                     <BackupRestoreSettings />
+                    {isStandaloneLocalEnabled() && <StandaloneDemoDataSettings />}
                     <DesktopUpdateSettings />
                     {isLocalFirstEnabled() && <SyncSettings />}
                     {isLocalPinEnabled() && <PinSettings />}

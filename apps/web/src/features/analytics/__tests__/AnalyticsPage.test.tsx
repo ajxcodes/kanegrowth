@@ -1,10 +1,11 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
 import { SqliteAnalyticsAdapter } from '@adapters/analytics/SqliteAnalyticsAdapter'
 import { MemorySqliteDriver } from '@platform/db/MemorySqliteDriver'
 import { runMigrations } from '@platform/db/migrations/runMigrations'
 import { MIGRATIONS } from '@platform/db/migrations/schema'
 import { seedAnalyticsHouseholdFixture } from '@platform/db/repositories/analyticsSeed'
+import { tableInvalidationBus } from '@lib/tableInvalidationBus'
 import AnalyticsPage from '../AnalyticsPage'
 
 describe('AnalyticsPage UI integration (TR-11)', () => {
@@ -81,6 +82,39 @@ describe('AnalyticsPage UI integration (TR-11)', () => {
       // 4. Apply member filter chip
       fireEvent.click(screen.getByTestId('filter-member-mem_sam'))
       expect(screen.getByTestId('filter-member-mem_sam')).toHaveAttribute('aria-pressed', 'true')
+    } finally {
+      await db.close()
+    }
+  })
+})
+
+describe('AnalyticsPage invalidation refresh (TR-16)', () => {
+  it('refreshes analytics when the local ledger is invalidated after a demo reset', async () => {
+    const db = await MemorySqliteDriver.create()
+    try {
+      await runMigrations(db, MIGRATIONS)
+      await seedAnalyticsHouseholdFixture(db)
+      const service = new SqliteAnalyticsAdapter(db)
+      const original = service.getCashFlowSankey.bind(service)
+      let sankeyCalls = 0
+      vi.spyOn(service, 'getCashFlowSankey').mockImplementation(async (filter) => {
+        sankeyCalls += 1
+        return original(filter)
+      })
+
+      render(<AnalyticsPage serviceOverride={service} />)
+
+      await waitFor(() => {
+        expect(screen.getByTestId('sankey-svg')).toBeInTheDocument()
+      })
+      expect(sankeyCalls).toBe(1)
+
+      act(() => {
+        tableInvalidationBus.publish('accounts')
+      })
+      await waitFor(() => {
+        expect(sankeyCalls).toBe(2)
+      })
     } finally {
       await db.close()
     }

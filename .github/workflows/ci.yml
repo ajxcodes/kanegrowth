@@ -160,6 +160,12 @@ jobs:
           PLAYWRIGHT_BASE_URL: http://localhost:8080
         run: npm --prefix apps/web run test:e2e
 
+      - name: Build standalone bundle for the standalone E2E suite
+        run: npm run build
+
+      - name: Run Standalone Playwright E2E tests
+        run: npx playwright test e2e/standalone-demo-data.spec.ts
+
       - name: Teardown compose stack
         if: always()
         run: docker compose down

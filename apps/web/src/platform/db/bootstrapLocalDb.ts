@@ -8,7 +8,7 @@ import { isLocalPinEnabled } from '@lib/localPinFlag'
 import { isStandaloneLocalEnabled } from '@lib/standaloneLocalFlag'
 import { isTauriRuntime } from '@lib/isTauri'
 import { migrateLegacyPinKeys, purgeLocalPinKeys } from '../offline/pinStorage'
-import { seedAnalyticsHouseholdFixture } from './repositories/analyticsSeed'
+import { ensureStandaloneDemoSeed } from './repositories/analyticsSeed'
 
 const LOCAL_DB_FILENAME = 'kanegrowth.sqlite3'
 
@@ -53,7 +53,7 @@ const createMigratedDriver = async (): Promise<LocalDb> => {
   await runMigrations(db, MIGRATIONS)
   await db.select('SELECT count(*) FROM _sync_meta')
   if (isStandaloneLocalEnabled()) {
-    await seedAnalyticsHouseholdFixture(db)
+    await ensureStandaloneDemoSeed(db)
   }
   return db
 }
