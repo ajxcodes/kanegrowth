@@ -5,16 +5,25 @@ use std::process::{Child, Command};
 use std::thread::sleep;
 use std::time::Duration;
 
-pub fn start_server(db_path: &str, port: u16) -> Child {
+pub fn start_server_with_env(db_path: &str, port: u16, extra: &[(&str, &str)]) -> Child {
     let bin = env!("CARGO_BIN_EXE_kanegrowth-api");
     let _ = std::fs::remove_file(db_path);
-    Command::new(bin)
+    let mut command = Command::new(bin);
+    command
         .env("KANEGROWTH_BIND", format!("127.0.0.1:{}", port))
         .env("KANEGROWTH_DB_PATH", db_path)
         .env("KANEGROWTH_JWT_SECRET", "test-secret")
         .env("KANEGROWTH_CORS_ORIGINS", "http://localhost:8080")
-        .spawn()
-        .unwrap()
+        // New auth-route tests read `data.devToken`; existing suites ignore the extra field.
+        .env("KANEGROWTH_DEV_AUTH_TOKENS", "1");
+    for (key, value) in extra {
+        command.env(key, value);
+    }
+    command.spawn().unwrap()
+}
+
+pub fn start_server(db_path: &str, port: u16) -> Child {
+    start_server_with_env(db_path, port, &[])
 }
 
 pub fn wait_health(port: u16) {

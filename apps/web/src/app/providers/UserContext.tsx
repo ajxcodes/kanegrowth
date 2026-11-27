@@ -4,7 +4,7 @@ import axiosInstance from '@lib/axiosInstance'
 import { API_PATHS } from '@lib/apiPaths'
 import type { ApiResponse, User } from '@lib/types/api'
 import type { AuthPayload } from '@features/auth/types'
-import { unwrapApiData } from '@lib/apiHelpers'
+import { parseAuthPayload } from '@features/auth/parseAuthPayload'
 import { getApiErrorMessage } from '@lib/apiError'
 import { resetPreferredCurrency, resetDateFormat, setDateFormat, setPreferredCurrency } from '@lib/format'
 import { getCachedUser, setCachedUser } from '@platform/offline/cachedUser'
@@ -262,12 +262,4 @@ export const setAuthSession = async (payload: AuthPayload): Promise<void> => {
     await provisionLocalDb(payload.user._id)
 }
 
-export const parseAuthPayload = (response: ApiResponse<AuthPayload> | AuthPayload): AuthPayload => {
-    const data = unwrapApiData(response)
-
-    if ('token' in data && 'user' in data) {
-        return data
-    }
-
-    throw new Error('Invalid auth response from server')
-}
+export { parseAuthPayload } from '@features/auth/parseAuthPayload'

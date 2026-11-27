@@ -14,6 +14,8 @@ import type { LocalAccount, LocalBudget, LocalCategory, LocalEnvelopeAssignment,
 import { tableInvalidationBus } from '@lib/tableInvalidationBus'
 import { EnvelopeError } from '@domain/envelope'
 import { SqliteEnvelopeLedgerAdapter } from '../SqliteEnvelopeLedgerAdapter'
+import { parseAuthPayload } from '@features/auth/parseAuthPayload'
+import fixture from '@fixtures/contract/auth.json'
 
 // ── sync mock for TR-38 ──────────────────────────────────────────────────────────────────────
 const pushOutboxOps = vi.fn<(...args: unknown[]) => Promise<unknown>>()
@@ -366,6 +368,21 @@ describe('tableInvalidationBus.publish envelopeAssignments after every mutation'
       unsub()
     }
     expect(events.length).toBeGreaterThanOrEqual(4)
+  })
+})
+
+// ── attribution from the shared auth fixture ─────────────────────────────────────────────────
+
+describe('attribution from the shared auth fixture', () => {
+  it('persists the user id parsed from the shared auth fixture', async () => {
+    const payload = parseAuthPayload(fixture.auth)
+    await seedIncome(db)
+    await adapter.assign({ userId: payload.user._id, workspaceId: null, envelopeId: 'food', month: MONTH, amountMinor: 5000 })
+
+    const rows = await db.select<{ userId: string }>(`SELECT userId FROM envelopeAssignments`)
+    expect(rows).toHaveLength(1)
+    expect(rows[0].userId).toBe(payload.user._id)
+    expect(rows[0].userId).not.toBe('')
   })
 })
 

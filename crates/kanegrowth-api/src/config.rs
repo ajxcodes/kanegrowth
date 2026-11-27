@@ -11,6 +11,8 @@ pub struct Config {
     pub ntfy_topic: Option<String>,
     pub access_ttl_secs: i64,
     pub refresh_ttl_days: i64,
+    pub require_email_verification: bool,
+    pub dev_auth_tokens: bool,
 }
 
 impl Config {
@@ -48,6 +50,16 @@ impl Config {
             .ok()
             .and_then(|s| s.parse().ok())
             .unwrap_or(30);
+        let parse_flag = |name: &str| {
+            env::var(name)
+                .map(|v| {
+                    let v = v.trim().to_ascii_lowercase();
+                    v == "1" || v == "true"
+                })
+                .unwrap_or(false)
+        };
+        let require_email_verification = parse_flag("KANEGROWTH_REQUIRE_EMAIL_VERIFICATION");
+        let dev_auth_tokens = parse_flag("KANEGROWTH_DEV_AUTH_TOKENS");
         Self {
             bind,
             db_path,
@@ -57,6 +69,8 @@ impl Config {
             ntfy_topic,
             access_ttl_secs,
             refresh_ttl_days,
+            require_email_verification,
+            dev_auth_tokens,
         }
     }
 }

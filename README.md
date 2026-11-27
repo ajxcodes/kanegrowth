@@ -45,6 +45,18 @@ docker compose up --build
 # Served on http://127.0.0.1:8080/analytics
 ```
 
+### Auth notes for single-container deployments
+
+- **No SMTP transport.** Password-reset and email-verification messages are write-only: the API
+  logs the link (`/reset-password?token=…`, `/verify-email?token=…`) instead of sending mail.
+- **`KANEGROWTH_DEV_AUTH_TOKENS`** (default off) echoes the raw token as `data.devToken` on the
+  reset-request and verification-resend responses. Enable it only on a trusted network.
+- **`KANEGROWTH_REQUIRE_EMAIL_VERIFICATION`** (default off) gates login on a verified address.
+  While it is off, registrations are marked verified and a startup backfill marks pre-existing
+  accounts verified, so existing users are not locked out by the `isEmailVerified` field.
+- The legal gate is real: the API publishes `legalVersions` (`2026-08-29` for both documents) and
+  every account without a matching `legalAcceptance` is asked to accept once.
+
 ## License
 
 Licensed under `AGPL-3.0-or-later`. See [LICENSE](./LICENSE) and [NOTICE](./NOTICE).

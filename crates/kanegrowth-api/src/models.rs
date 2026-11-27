@@ -21,16 +21,54 @@ impl<T> ApiResponse<T> {
     }
 }
 
+pub const LEGAL_TERMS_VERSION: &str = "2026-08-29";
+pub const LEGAL_PRIVACY_VERSION: &str = "2026-08-29";
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LegalVersions {
+    #[serde(rename = "termsVersion")]
+    pub terms_version: String,
+    #[serde(rename = "privacyVersion")]
+    pub privacy_version: String,
+}
+
+impl LegalVersions {
+    pub fn current() -> Self {
+        Self {
+            terms_version: LEGAL_TERMS_VERSION.to_string(),
+            privacy_version: LEGAL_PRIVACY_VERSION.to_string(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserDto {
+    #[serde(rename = "_id")]
     pub id: String,
     pub email: String,
     #[serde(rename = "fullName")]
-    pub full_name: Option<String>,
-    #[serde(rename = "emailVerified")]
+    pub full_name: String,
+    #[serde(rename = "isEmailVerified")]
     pub email_verified: bool,
     #[serde(rename = "createdAt")]
     pub created_at: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub timezone: Option<String>,
+    #[serde(rename = "preferredCurrency", skip_serializing_if = "Option::is_none")]
+    pub preferred_currency: Option<String>,
+    #[serde(rename = "dateFormat", skip_serializing_if = "Option::is_none")]
+    pub date_format: Option<String>,
+    #[serde(rename = "pageSize", skip_serializing_if = "Option::is_none")]
+    pub page_size: Option<i64>,
+    #[serde(
+        rename = "notificationPreferences",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub notification_preferences: Option<Value>,
+    #[serde(rename = "legalAcceptance", skip_serializing_if = "Option::is_none")]
+    pub legal_acceptance: Option<Value>,
+    #[serde(rename = "legalVersions")]
+    pub legal_versions: LegalVersions,
 }
 
 #[derive(Debug, Deserialize)]
@@ -39,6 +77,74 @@ pub struct RegisterRequest {
     pub password: String,
     #[serde(rename = "fullName")]
     pub full_name: Option<String>,
+    pub timezone: Option<String>,
+    #[serde(rename = "acceptedTerms")]
+    pub accepted_terms: Option<bool>,
+    #[serde(rename = "ageAttested")]
+    pub age_attested: Option<bool>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+pub struct UpdateUserRequest {
+    #[serde(rename = "fullName")]
+    pub full_name: Option<String>,
+    pub timezone: Option<String>,
+    #[serde(rename = "preferredCurrency")]
+    pub preferred_currency: Option<String>,
+    #[serde(rename = "dateFormat")]
+    pub date_format: Option<String>,
+    #[serde(rename = "pageSize")]
+    pub page_size: Option<i64>,
+    #[serde(rename = "notificationPreferences")]
+    pub notification_preferences: Option<Value>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct PasswordResetRequest {
+    pub email: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct PasswordResetConfirmRequest {
+    pub token: String,
+    pub password: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct EmailVerificationConfirmRequest {
+    pub token: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct EmailVerificationResendRequest {
+    pub email: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct DeleteAccountRequest {
+    pub password: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AuthMessageResponse {
+    pub message: String,
+    #[serde(rename = "devToken", skip_serializing_if = "Option::is_none")]
+    pub dev_token: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AffectedWorkspace {
+    #[serde(rename = "workspaceId")]
+    pub workspace_id: String,
+    pub name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AccountDeletionImpact {
+    #[serde(rename = "retainedRecordCount")]
+    pub retained_record_count: i64,
+    #[serde(rename = "affectedWorkspaces")]
+    pub affected_workspaces: Vec<AffectedWorkspace>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -67,11 +173,24 @@ pub struct WorkspaceCreateRequest {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct WorkspaceMemberDto {
+    #[serde(rename = "userId")]
+    pub user_id: String,
+    pub role: String,
+    #[serde(rename = "fullName", skip_serializing_if = "Option::is_none")]
+    pub full_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub email: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct WorkspaceDto {
+    #[serde(rename = "_id")]
     pub id: String,
     pub name: String,
-    #[serde(rename = "ownerUserId")]
-    pub owner_user_id: String,
+    #[serde(rename = "ownerId")]
+    pub owner_id: String,
+    pub members: Vec<WorkspaceMemberDto>,
     #[serde(rename = "createdAt")]
     pub created_at: String,
     #[serde(rename = "updatedAt")]

@@ -7,6 +7,7 @@ import axiosInstance from '@lib/axiosInstance'
 import { API_PATHS } from '@lib/apiPaths'
 import type { User } from '@lib/types/api'
 import type { Workspace, WorkspaceInvite } from '@features/workspaces/types'
+import fixture from '@fixtures/contract/auth.json'
 
 // T4: Workspaces.tsx had zero prior coverage - create/switch/invite/accept/decline/role-gating/
 // remove/leave were all untested. Everything here goes through axiosInstance directly (workspace
@@ -107,6 +108,50 @@ describe('Workspaces - listing', () => {
         expect(screen.getAllByText('Owner').length).toBeGreaterThan(0)
         expect(screen.getAllByText('Editor').length).toBeGreaterThan(0)
         expect(screen.getAllByText('2 members')).toHaveLength(2)
+    })
+})
+
+describe('Workspaces - contract and legacy payloads', () => {
+    it('renders a workspace from the shared contract fixture without crashing', async () => {
+        // The fixture's member must be the signed-in user for the role badge to render.
+        vi.mocked(axiosInstance.post).mockImplementation(async (url: string) => {
+            if (url === API_PATHS.AUTH.REFRESH) {
+                return {
+                    success: true,
+                    data: { token: 'test-token', user: { ...mockUser, _id: fixture.auth.user._id } },
+                }
+            }
+            return { success: true, data: [] }
+        })
+        vi.mocked(axiosInstance.get).mockImplementation(async (url: string) => {
+            if (url === API_PATHS.WORKSPACES.GET_ALL) {
+                return { success: true, data: [fixture.workspace] }
+            }
+            return { success: true, data: [] }
+        })
+
+        renderWithProviders(<Workspaces />, { route: '/workspaces' })
+
+        await waitFor(() => expect(screen.getByText('Contract Household')).toBeInTheDocument())
+        expect(screen.getAllByText('Owner').length).toBeGreaterThan(0)
+        expect(screen.getByText('1 member')).toBeInTheDocument()
+    })
+
+    it('normalises a legacy id and ownerUserId payload instead of crashing', async () => {
+        vi.mocked(axiosInstance.get).mockImplementation(async (url: string) => {
+            if (url === API_PATHS.WORKSPACES.GET_ALL) {
+                return {
+                    success: true,
+                    data: [{ id: 'ws-legacy', name: 'Legacy Household', ownerUserId: 'user1' }],
+                }
+            }
+            return { success: true, data: [] }
+        })
+
+        renderWithProviders(<Workspaces />, { route: '/workspaces' })
+
+        await waitFor(() => expect(screen.getByText('Legacy Household')).toBeInTheDocument())
+        expect(screen.getByText('0 members')).toBeInTheDocument()
     })
 })
 
