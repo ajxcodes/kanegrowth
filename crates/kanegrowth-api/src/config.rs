@@ -9,6 +9,8 @@ pub struct Config {
     pub cors_origins: Vec<String>,
     pub ntfy_url: Option<String>,
     pub ntfy_topic: Option<String>,
+    /// Bearer token for a protected ntfy topic. Never logged; redacted in the `Debug` impl.
+    pub ntfy_token: Option<String>,
     pub access_ttl_secs: i64,
     pub refresh_ttl_days: i64,
     pub require_email_verification: bool,
@@ -32,6 +34,10 @@ impl std::fmt::Debug for Config {
             .field("cors_origins", &self.cors_origins)
             .field("ntfy_url", &self.ntfy_url)
             .field("ntfy_topic", &self.ntfy_topic)
+            .field(
+                "ntfy_token",
+                &self.ntfy_token.as_ref().map(|_| "<redacted>"),
+            )
             .field("access_ttl_secs", &self.access_ttl_secs)
             .field("refresh_ttl_days", &self.refresh_ttl_days)
             .field(
@@ -78,6 +84,10 @@ impl Config {
         }
         let ntfy_url = env::var("NTFY_URL").ok().filter(|s| !s.is_empty());
         let ntfy_topic = env::var("NTFY_TOPIC").ok().filter(|s| !s.is_empty());
+        let ntfy_token = env::var("NTFY_TOKEN")
+            .ok()
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty());
         let access_ttl_secs = env::var("KANEGROWTH_ACCESS_TTL_SECS")
             .ok()
             .and_then(|s| s.parse().ok())
@@ -118,6 +128,7 @@ impl Config {
             cors_origins,
             ntfy_url,
             ntfy_topic,
+            ntfy_token,
             access_ttl_secs,
             refresh_ttl_days,
             require_email_verification,

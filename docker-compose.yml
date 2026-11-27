@@ -14,8 +14,16 @@ services:
       KANEGROWTH_CORS_ORIGINS: "http://localhost:8080"
       # Runtime secret (never a build arg): the private half of the offline-grant keypair.
       KANEGROWTH_OFFLINE_GRANT_PRIVATE_KEY: ${KANEGROWTH_OFFLINE_GRANT_PRIVATE_KEY:-}
+      # ntfy delivery (issue #16). An empty NTFY_TOKEN keeps the topic open on the
+      # host-local port; see docs/notifications.md before widening the bind.
+      NTFY_URL: "http://ntfy:80"
+      NTFY_TOPIC: ${NTFY_TOPIC:-kanegrowth}
+      NTFY_TOKEN: ${NTFY_TOKEN:-}
     volumes:
       - kanegrowth-data:/data
+    depends_on:
+      ntfy:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://127.0.0.1:8080/health"]
@@ -24,5 +32,27 @@ services:
       retries: 5
       start_period: 15s
 
+  ntfy:
+    image: binwiederhier/ntfy:v2.38.2
+    command: serve
+    ports:
+      # Host-local by default: do not publish an unauthenticated topic to the LAN.
+      - "127.0.0.1:2586:80"
+    environment:
+      NTFY_BASE_URL: ${NTFY_BASE_URL:-http://localhost:2586}
+      NTFY_CACHE_FILE: /var/cache/ntfy/cache.db
+      TZ: UTC
+    volumes:
+      - ntfy-cache:/var/cache/ntfy
+    init: true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --tries=1 http://localhost:80/v1/health -O - | grep -Eo '\"healthy\"\\s*:\\s*true' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
 volumes:
   kanegrowth-data:
+  ntfy-cache:

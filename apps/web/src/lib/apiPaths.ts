@@ -148,6 +148,8 @@ export const API_PATHS = {
     },
     NOTIFICATIONS: {
         GET_ALL: '/notifications',
+        PREFERENCES: '/notifications/preferences',
+        EVENTS: '/notifications/events',
         MARK_READ: (notificationId: string) => `/notifications/${notificationId}/read`,
         DISMISS: (notificationId: string) => `/notifications/${notificationId}/dismiss`,
         MARK_ALL_READ: '/notifications/read-all',
