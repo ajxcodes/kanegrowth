@@ -48,6 +48,13 @@ docker compose up --build
 # Served on http://127.0.0.1:8080/analytics
 ```
 
+### Notifications (ntfy)
+
+The compose stack also starts a self-hosted `ntfy` service on `http://localhost:2586`. Budget,
+bill, maintenance and sync events are stored in-app and, when `NTFY_URL`/`NTFY_TOPIC` are set,
+published to that topic. See [docs/notifications.md](docs/notifications.md) for setup, auth and
+the API.
+
 ### Auth notes for single-container deployments
 
 - **No SMTP transport.** Password-reset and email-verification messages are write-only: the API

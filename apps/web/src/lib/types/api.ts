@@ -25,6 +25,16 @@ export interface LegalVersions {
 export interface NotificationPreferences {
     billRemindersEnabled: boolean
     billReminderDaysBefore: number
+    /** Master switch for every notification type. Defaults to `true`. */
+    enabled?: boolean
+    budgetAlertsEnabled?: boolean
+    /** Percentage of a budget that triggers a `budget_threshold` alert (server clamps 1..=100). */
+    budgetAlertThresholdPercent?: number
+    maintenanceRemindersEnabled?: boolean
+    /** Off by default so a sync burst cannot spam the notification centre. */
+    syncNotificationsEnabled?: boolean
+    savingsMilestoneEnabled?: boolean
+    workspaceInviteEnabled?: boolean
 }
 
 export interface User {

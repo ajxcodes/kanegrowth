@@ -49,6 +49,7 @@ import type { ApiResponse, User } from '@lib/types/api'
 import { unwrapApiData } from '@lib/apiHelpers'
 import { getApiErrorMessage } from '@lib/apiError'
 import NotificationCenter from '@features/notifications/components/NotificationCenter'
+import { updateNotificationPreferences } from '@features/notifications/api'
 import LoadingState from '@ui/LoadingState'
 import ProfileSettings from '@features/settings/components/ProfileSettings'
 import TransactionTemplatesSettings from '@features/settings/components/TransactionTemplatesSettings'
@@ -158,17 +159,24 @@ const DashboardLayout: React.FC = () => {
     const handleBillRemindersToggle = async (enabled: boolean) => {
         if (!user) return
 
+        const previous = user.notificationPreferences
         setSavingNotifications(true)
+        // The checkbox is controlled by the user context, so apply the choice optimistically:
+        // waiting for the round trip would snap it back and make the toggle feel unresponsive.
+        updateUser({
+            ...user,
+            notificationPreferences: {
+                billReminderDaysBefore: 3,
+                ...previous,
+                billRemindersEnabled: enabled,
+            },
+        })
         try {
-            const response = await axiosInstance.patch<ApiResponse<User>>(API_PATHS.AUTH.UPDATE_USER, {
-                notificationPreferences: {
-                    billRemindersEnabled: enabled,
-                    billReminderDaysBefore: user.notificationPreferences?.billReminderDaysBefore ?? 3,
-                },
-            })
-            updateUser(unwrapApiData(response))
+            const prefs = await updateNotificationPreferences({ billRemindersEnabled: enabled })
+            updateUser({ ...user, notificationPreferences: prefs })
             toast.success(enabled ? 'Bill reminders enabled' : 'Bill reminders disabled')
         } catch (error) {
+            updateUser({ ...user, notificationPreferences: previous })
             toast.error(getApiErrorMessage(error, 'Failed to update notification preferences'))
         } finally {
             setSavingNotifications(false)
@@ -180,13 +188,8 @@ const DashboardLayout: React.FC = () => {
 
         setSavingNotifications(true)
         try {
-            const response = await axiosInstance.patch<ApiResponse<User>>(API_PATHS.AUTH.UPDATE_USER, {
-                notificationPreferences: {
-                    billRemindersEnabled: user.notificationPreferences?.billRemindersEnabled ?? true,
-                    billReminderDaysBefore: days,
-                },
-            })
-            updateUser(unwrapApiData(response))
+            const prefs = await updateNotificationPreferences({ billReminderDaysBefore: days })
+            updateUser({ ...user, notificationPreferences: prefs })
             toast.success('Bill reminder timing updated')
         } catch (error) {
             toast.error(getApiErrorMessage(error, 'Failed to update notification preferences'))
@@ -449,6 +452,8 @@ const DashboardLayout: React.FC = () => {
                                         void handleBillRemindersToggle(event.target.checked)
                                     }
                                     disabled={savingNotifications}
+                                    aria-label="Bill due reminders"
+                                    data-testid="bill-reminders-toggle"
                                     className="h-4 w-4 rounded border-border bg-elevated text-accent focus:ring-accent/40"
                                 />
                             </label>

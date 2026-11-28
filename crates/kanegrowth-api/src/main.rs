@@ -4,6 +4,7 @@ mod db;
 mod entity_map;
 mod migrations;
 mod models;
+mod notifications;
 mod ntfy;
 mod offline_grant;
 mod sync;
@@ -14,11 +15,12 @@ use crate::auth::{extract_bearer, validate_access_token, Claims};
 use crate::config::Config;
 use crate::db::Db;
 use crate::models::*;
+use crate::ntfy::NtfyClient;
 use axum::{
     extract::{Path, Query, State},
     http::{header, HeaderMap, HeaderValue, StatusCode},
     response::Json,
-    routing::{delete, get, post},
+    routing::{delete, get, patch, post},
     Router,
 };
 use serde::Deserialize;
@@ -29,6 +31,7 @@ use tower_http::cors::{Any, CorsLayer};
 struct AppState {
     db: Db,
     config: Config,
+    ntfy: NtfyClient,
 }
 
 #[tokio::main]
@@ -49,7 +52,13 @@ async fn main() {
     let state = AppState {
         db: db.clone(),
         config: config.clone(),
+        ntfy: NtfyClient::from_config(&config),
     };
+    if !state.ntfy.is_configured() {
+        tracing::warn!(
+            "NTFY_URL/NTFY_TOPIC are not configured; notifications will be stored in-app only"
+        );
+    }
 
     // CORS
     let cors = if config.cors_origins.iter().any(|o| o == "*") {
@@ -115,6 +124,15 @@ fn api_router() -> Router<AppState> {
         .route("/sync/bootstrap", get(sync_bootstrap))
         .route("/sync/pull", get(sync_pull))
         .route("/sync/push", post(sync_push))
+        .route("/notifications", get(notifications_list))
+        .route("/notifications/read-all", patch(notifications_read_all))
+        .route(
+            "/notifications/preferences",
+            get(notifications_get_preferences).patch(notifications_patch_preferences),
+        )
+        .route("/notifications/events", post(notifications_create_event))
+        .route("/notifications/:id/read", patch(notifications_mark_read))
+        .route("/notifications/:id/dismiss", patch(notifications_dismiss))
 }
 
 async fn health() -> Json<serde_json::Value> {
@@ -706,7 +724,13 @@ async fn sync_push(
             Json(serde_json::json!({"error":"unauthorized"})),
         )
     })?;
-    match sync::push(&state.db, &claims.sub, body.workspace_id.clone(), body) {
+    match sync::push(
+        &state.db,
+        &state.ntfy,
+        &claims.sub,
+        body.workspace_id.clone(),
+        body,
+    ) {
         Ok(v) => Ok(Json(ApiResponse::data(v))),
         Err(e) => {
             if e == "forbidden" {
@@ -719,4 +743,195 @@ async fn sync_push(
             }
         }
     }
+}
+
+// --- notification handlers ---
+fn notification_error(
+    status: StatusCode,
+    message: impl Into<String>,
+) -> (StatusCode, Json<serde_json::Value>) {
+    (status, Json(serde_json::json!({"message": message.into()})))
+}
+
+fn truncate_chars(value: &str, max: usize) -> String {
+    value.chars().take(max).collect()
+}
+
+fn default_notification_title(kind: &str) -> &'static str {
+    match kind {
+        "budget_threshold" => "Budget alert",
+        "budget_over_limit" => "Budget exceeded",
+        "bill_due" => "Bill due",
+        "maintenance_due" => "Maintenance due",
+        "sync_completed" => "Sync complete",
+        "import_completed" => "Import complete",
+        "savings_milestone" => "Savings milestone",
+        "workspace_invite" => "Workspace invitation",
+        _ => "Notification",
+    }
+}
+
+#[derive(Deserialize)]
+struct NotificationEventRequest {
+    #[serde(rename = "type")]
+    kind: String,
+    title: Option<String>,
+    message: Option<String>,
+    #[serde(rename = "referenceType")]
+    reference_type: Option<String>,
+    #[serde(rename = "referenceId")]
+    reference_id: Option<String>,
+    metadata: Option<serde_json::Value>,
+    #[serde(rename = "dedupeKey")]
+    dedupe_key: Option<String>,
+    #[serde(rename = "workspaceId")]
+    workspace_id: Option<String>,
+}
+
+fn clean_optional(value: Option<String>, max: usize) -> Option<String> {
+    value
+        .map(|v| v.trim().to_string())
+        .filter(|v| !v.is_empty())
+        .map(|v| truncate_chars(&v, max))
+}
+
+async fn notifications_list(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> Result<
+    Json<ApiResponse<crate::notifications::NotificationList>>,
+    (StatusCode, Json<serde_json::Value>),
+> {
+    let claims = require_claims(&state, &headers)?;
+    // Evaluation is idempotent (dedupe keys) and best-effort; the list must still render.
+    crate::notifications::run_due_checks(&state.db, &state.ntfy, &claims.sub);
+    crate::notifications::list(&state.db, &claims.sub)
+        .map(|v| Json(ApiResponse::data(v)))
+        .map_err(|e| notification_error(StatusCode::BAD_REQUEST, e))
+}
+
+async fn notifications_mark_read(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+) -> Result<
+    Json<ApiResponse<crate::notifications::NotificationDto>>,
+    (StatusCode, Json<serde_json::Value>),
+> {
+    let claims = require_claims(&state, &headers)?;
+    crate::notifications::mark_read(&state.db, &claims.sub, &id)
+        .map(|v| Json(ApiResponse::data(v)))
+        .map_err(|e| {
+            if e == "not found" {
+                notification_error(StatusCode::NOT_FOUND, e)
+            } else {
+                notification_error(StatusCode::BAD_REQUEST, e)
+            }
+        })
+}
+
+async fn notifications_dismiss(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+) -> Result<
+    Json<ApiResponse<crate::notifications::NotificationDto>>,
+    (StatusCode, Json<serde_json::Value>),
+> {
+    let claims = require_claims(&state, &headers)?;
+    crate::notifications::dismiss(&state.db, &claims.sub, &id)
+        .map(|v| Json(ApiResponse::data(v)))
+        .map_err(|e| {
+            if e == "not found" {
+                notification_error(StatusCode::NOT_FOUND, e)
+            } else {
+                notification_error(StatusCode::BAD_REQUEST, e)
+            }
+        })
+}
+
+async fn notifications_read_all(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> Result<Json<ApiResponse<serde_json::Value>>, (StatusCode, Json<serde_json::Value>)> {
+    let claims = require_claims(&state, &headers)?;
+    crate::notifications::mark_all_read(&state.db, &claims.sub)
+        .map(|updated| Json(ApiResponse::data(serde_json::json!({"updated": updated}))))
+        .map_err(|e| notification_error(StatusCode::BAD_REQUEST, e))
+}
+
+async fn notifications_get_preferences(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> Result<
+    Json<ApiResponse<crate::notifications::NotificationPreferences>>,
+    (StatusCode, Json<serde_json::Value>),
+> {
+    let claims = require_claims(&state, &headers)?;
+    crate::notifications::get_preferences(&state.db, &claims.sub)
+        .map(|v| Json(ApiResponse::data(v)))
+        .map_err(|e| notification_error(StatusCode::BAD_REQUEST, e))
+}
+
+async fn notifications_patch_preferences(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Json(body): Json<crate::notifications::NotificationPreferencesPatch>,
+) -> Result<
+    Json<ApiResponse<crate::notifications::NotificationPreferences>>,
+    (StatusCode, Json<serde_json::Value>),
+> {
+    let claims = require_claims(&state, &headers)?;
+    crate::notifications::update_preferences(&state.db, &claims.sub, body)
+        .map(|v| Json(ApiResponse::data(v)))
+        .map_err(|e| notification_error(StatusCode::BAD_REQUEST, e))
+}
+
+async fn notifications_create_event(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Json(body): Json<NotificationEventRequest>,
+) -> Result<Json<ApiResponse<serde_json::Value>>, (StatusCode, Json<serde_json::Value>)> {
+    let claims = require_claims(&state, &headers)?;
+    let kind = body.kind.trim().to_string();
+    if !crate::notifications::NOTIFICATION_TYPES.contains(&kind.as_str()) {
+        return Err(notification_error(
+            StatusCode::BAD_REQUEST,
+            "invalid notification type",
+        ));
+    }
+    if let Some(workspace_id) = body.workspace_id.as_deref().filter(|w| !w.is_empty()) {
+        if !crate::workspaces::is_member(&state.db, workspace_id, &claims.sub) {
+            return Err(notification_error(StatusCode::FORBIDDEN, "forbidden"));
+        }
+    }
+
+    let title = clean_optional(body.title, 200)
+        .unwrap_or_else(|| default_notification_title(&kind).to_string());
+    let message = clean_optional(body.message, 2_000).unwrap_or_else(|| title.clone());
+    let metadata = match body.metadata {
+        Some(value) if value.is_object() => value,
+        _ => serde_json::json!({}),
+    };
+
+    let event = crate::notifications::NotificationEvent {
+        kind,
+        title,
+        message,
+        reference_type: clean_optional(body.reference_type, 64),
+        reference_id: clean_optional(body.reference_id, 64),
+        metadata,
+        dedupe_key: clean_optional(body.dedupe_key, 200),
+        workspace_id: clean_optional(body.workspace_id, 64),
+    };
+
+    crate::notifications::emit(&state.db, &state.ntfy, &claims.sub, event)
+        .map(|outcome| {
+            Json(ApiResponse::data(serde_json::json!({
+                "notification": outcome.notification,
+                "deduped": outcome.deduped,
+                "suppressed": outcome.suppressed,
+            })))
+        })
+        .map_err(|e| notification_error(StatusCode::BAD_REQUEST, e))
 }

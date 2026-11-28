@@ -14,12 +14,27 @@ import {
     previewLocalImport,
     commitLocalImport,
 } from '@domain/importTransactions'
+import { emitNotificationEvent } from '@features/notifications/api'
 import type { ImportCommitResponse, ImportDelimiter, ImportParseResponse, ImportPreviewResponse } from '@features/import/types'
 
 export interface UseImportTransactionsDataResult {
     parseImportFile: (file: File, delimiter?: ImportDelimiter) => Promise<ImportParseResponse>
     previewImport: (payload: ImportPreviewPayload) => Promise<ImportPreviewResponse>
     commitImport: (payload: ImportPreviewPayload) => Promise<ImportCommitResponse>
+}
+
+/**
+ * Notifies the server that an import finished (issue #16). Fire-and-forget: a delivery failure
+ * must never change the import result, and imports run locally so the client is the producer.
+ */
+const notifyImportCompleted = (result: ImportCommitResponse): void => {
+    void emitNotificationEvent({
+        type: 'import_completed',
+        title: 'Import complete',
+        message: `${result.imported} imported, ${result.merged} merged, ${result.skipped} skipped`,
+        referenceType: 'import',
+        metadata: { imported: result.imported },
+    }).catch(() => {})
 }
 
 /**
@@ -59,7 +74,9 @@ export const useImportTransactionsData = (): UseImportTransactionsDataResult => 
     const commitImport = useCallback(
         async (payload: ImportPreviewPayload): Promise<ImportCommitResponse> => {
             if (!localFirst) {
-                return commitImportServer(payload)
+                const response = await commitImportServer(payload)
+                notifyImportCompleted(response)
+                return response
             }
             if (!user) {
                 throw new Error('Not authenticated')
@@ -72,6 +89,7 @@ export const useImportTransactionsData = (): UseImportTransactionsDataResult => 
             })
             tableInvalidationBus.publish('transactions')
             tableInvalidationBus.publish('accounts')
+            notifyImportCompleted(result)
             return result
         },
         [localFirst, user]

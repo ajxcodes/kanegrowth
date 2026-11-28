@@ -1,11 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { FiBell, FiCheck, FiX } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
-import axiosInstance from '@lib/axiosInstance'
-import { API_PATHS } from '@lib/apiPaths'
-import type { ApiResponse } from '@lib/types/api'
 import type { NotificationListPayload } from '@features/notifications/types'
-import { unwrapApiData } from '@lib/apiHelpers'
+import {
+    dismissNotification,
+    fetchNotifications as fetchNotificationsRequest,
+    markAllNotificationsRead,
+    markNotificationRead,
+} from '@features/notifications/api'
 import { getApiErrorMessage } from '@lib/apiError'
 import { formatRelativeTime } from '@lib/format'
 import { isStandaloneLocalEnabled } from '@lib/standaloneLocalFlag'
@@ -14,6 +16,7 @@ const notificationLink = (type: string, referenceId?: string): string | null => 
     if (!referenceId) return null
     switch (type) {
         case 'budget_over_limit':
+        case 'budget_threshold':
             return '/budgets'
         case 'bill_due':
             return '/recurring'
@@ -21,6 +24,11 @@ const notificationLink = (type: string, referenceId?: string): string | null => 
             return '/savings-goals'
         case 'workspace_invite':
             return '/workspaces?tab=invitations'
+        case 'maintenance_due':
+        case 'sync_completed':
+            return '/settings'
+        case 'import_completed':
+            return '/transactions'
         default:
             return null
     }
@@ -43,10 +51,7 @@ const NotificationCenter: React.FC = () => {
         setLoading(true)
         setError(null)
         try {
-            const response = await axiosInstance.get<ApiResponse<NotificationListPayload>>(
-                API_PATHS.NOTIFICATIONS.GET_ALL
-            )
-            const payload = unwrapApiData(response)
+            const payload = await fetchNotificationsRequest()
             setNotifications(payload.notifications)
             setUnreadCount(payload.unreadCount)
         } catch (err) {
@@ -75,7 +80,7 @@ const NotificationCenter: React.FC = () => {
 
     const handleMarkRead = async (notificationId: string) => {
         try {
-            await axiosInstance.patch(API_PATHS.NOTIFICATIONS.MARK_READ(notificationId))
+            await markNotificationRead(notificationId)
             setNotifications((prev) =>
                 prev.map((entry) =>
                     entry._id === notificationId
@@ -91,7 +96,7 @@ const NotificationCenter: React.FC = () => {
 
     const handleDismiss = async (notificationId: string) => {
         try {
-            await axiosInstance.patch(API_PATHS.NOTIFICATIONS.DISMISS(notificationId))
+            await dismissNotification(notificationId)
             setNotifications((prev) => prev.filter((entry) => entry._id !== notificationId))
             setUnreadCount((prev) => {
                 const dismissed = notifications.find((entry) => entry._id === notificationId)
@@ -104,7 +109,7 @@ const NotificationCenter: React.FC = () => {
 
     const handleMarkAllRead = async () => {
         try {
-            await axiosInstance.patch(API_PATHS.NOTIFICATIONS.MARK_ALL_READ)
+            await markAllNotificationsRead()
             setNotifications((prev) =>
                 prev.map((entry) => ({
                     ...entry,
@@ -129,13 +134,17 @@ const NotificationCenter: React.FC = () => {
             <button
                 type="button"
                 onClick={toggleOpen}
+                data-testid="notification-center-bell"
                 className="relative flex items-center justify-center h-9 w-9 rounded-lg border border-border text-fg-muted hover:text-accent hover:border-accent/40 transition-colors"
                 aria-label="Notifications"
                 aria-expanded={open}
             >
                 <FiBell size={16} />
                 {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-semibold text-on-accent">
+                    <span
+                        data-testid="notification-unread-badge"
+                        className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-semibold text-on-accent"
+                    >
                         {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                 )}
@@ -149,6 +158,7 @@ const NotificationCenter: React.FC = () => {
                             <button
                                 type="button"
                                 onClick={() => void handleMarkAllRead()}
+                                data-testid="notification-mark-all-read"
                                 className="text-xs font-medium text-accent hover:text-accent"
                             >
                                 Mark all read
@@ -180,6 +190,7 @@ const NotificationCenter: React.FC = () => {
                                     return (
                                         <li
                                             key={notification._id}
+                                            data-testid="notification-item"
                                             className={[
                                                 'px-4 py-3',
                                                 isUnread ? 'bg-accent-subtle' : 'bg-transparent',
@@ -213,6 +224,7 @@ const NotificationCenter: React.FC = () => {
                                                             onClick={() =>
                                                                 void handleMarkRead(notification._id)
                                                             }
+                                                            data-testid="notification-mark-read"
                                                             className="rounded p-1 text-fg-muted hover:text-accent"
                                                             aria-label="Mark as read"
                                                             title="Mark as read"
@@ -225,6 +237,7 @@ const NotificationCenter: React.FC = () => {
                                                         onClick={() =>
                                                             void handleDismiss(notification._id)
                                                         }
+                                                        data-testid="notification-dismiss"
                                                         className="rounded p-1 text-fg-muted hover:text-expense"
                                                         aria-label="Dismiss"
                                                         title="Dismiss"

@@ -93,6 +93,7 @@ mod tests {
             cors_origins: vec!["*".to_string()],
             ntfy_url: None,
             ntfy_topic: None,
+            ntfy_token: None,
             access_ttl_secs: 3600,
             refresh_ttl_days: 30,
             require_email_verification: false,

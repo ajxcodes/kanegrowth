@@ -1,6 +1,7 @@
 use crate::db::Db;
 use crate::entity_map;
 use crate::models::*;
+use crate::ntfy::NtfyClient;
 use crate::util::now_iso;
 use chrono::Utc;
 use rusqlite::params;
@@ -534,6 +535,7 @@ pub fn pull(
 
 pub fn push(
     db: &Db,
+    ntfy: &NtfyClient,
     user_id: &str,
     workspace_id: Option<String>,
     req: SyncPushRequest,
@@ -548,6 +550,7 @@ pub fn push(
     let eff_workspace = workspace_id.clone().or(req.workspace_id.clone());
 
     let mut results = Vec::new();
+    let mut applied: usize = 0;
     let conn = crate::db::conn(db);
     for op in &req.ops {
         // idempotency
@@ -711,6 +714,10 @@ pub fn push(
             }
         }
 
+        if status == "applied" {
+            applied += 1;
+        }
+
         // store sync_operation
         let rid_for_store = if status == "conflict" {
             None
@@ -748,11 +755,27 @@ pub fn push(
 
     // checkpoint
     let checkpoint = compute_checkpoint(&conn, user_id, eff_workspace.as_deref());
+    // The `Db` mutex is not re-entrant: notification evaluation/emission locks the same guard, so
+    // it must run only after this one is released (issue #16).
+    drop(conn);
 
-    Ok(PushResponse {
+    let response = PushResponse {
         results,
         checkpoint,
-    })
+    };
+
+    if applied > 0 {
+        crate::notifications::run_due_checks(db, ntfy, user_id);
+        crate::notifications::emit_sync_completed(
+            db,
+            ntfy,
+            user_id,
+            eff_workspace.as_deref(),
+            applied,
+        );
+    }
+
+    Ok(response)
 }
 
 fn compute_checkpoint(

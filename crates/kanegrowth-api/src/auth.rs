@@ -124,7 +124,9 @@ pub fn user_to_dto(
             .and_then(|v| v.as_str())
             .map(str::to_string),
         page_size: settings.get("pageSize").and_then(|v| v.as_i64()),
-        notification_preferences: settings.get("notificationPreferences").cloned(),
+        notification_preferences: Some(crate::notifications::preferences_value(
+            settings.get("notificationPreferences"),
+        )),
         legal_acceptance: settings.get("legalAcceptance").cloned(),
         legal_versions: LegalVersions::current(),
     }
@@ -381,7 +383,14 @@ pub fn patch_user(db: &Db, user_id: &str, req: UpdateUserRequest) -> Result<User
         settings.insert("pageSize".to_string(), json!(page_size));
     }
     if let Some(prefs) = &req.notification_preferences {
-        settings.insert("notificationPreferences".to_string(), prefs.clone());
+        // Merge known keys so a partial update from an older client cannot erase budget/sync keys.
+        settings.insert(
+            "notificationPreferences".to_string(),
+            crate::notifications::merge_preferences_json(
+                settings.get("notificationPreferences"),
+                prefs,
+            ),
+        );
     }
 
     conn.execute(
@@ -720,6 +729,13 @@ pub fn delete_account(db: &Db, user_id: &str, password: &str) -> Result<(), Stri
     .map_err(|e| e.to_string())?;
     conn.execute(
         "DELETE FROM sync_operations WHERE user_id = ?1",
+        params![user_id],
+    )
+    .map_err(|e| e.to_string())?;
+    // `notifications` is server-owned (not in `entity_map::all_tables`), so the generic loops above
+    // never touch it. Delete explicitly before the `users` row to satisfy the foreign key.
+    conn.execute(
+        "DELETE FROM notifications WHERE user_id = ?1",
         params![user_id],
     )
     .map_err(|e| e.to_string())?;

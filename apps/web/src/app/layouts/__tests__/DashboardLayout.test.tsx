@@ -86,6 +86,49 @@ describe('DashboardLayout navigation', () => {
     })
 })
 
+describe('DashboardLayout notification preferences', () => {
+    it('persists bill reminder preferences through the notifications preferences endpoint', async () => {
+        vi.mocked(axiosInstance.patch).mockImplementation((url: string) => {
+            if (url === API_PATHS.NOTIFICATIONS.PREFERENCES) {
+                return Promise.resolve({
+                    success: true,
+                    data: {
+                        enabled: true,
+                        budgetAlertsEnabled: true,
+                        budgetAlertThresholdPercent: 80,
+                        billRemindersEnabled: false,
+                        billReminderDaysBefore: 3,
+                        maintenanceRemindersEnabled: true,
+                        syncNotificationsEnabled: false,
+                        savingsMilestoneEnabled: true,
+                        workspaceInviteEnabled: true,
+                    },
+                })
+            }
+            return Promise.reject(new Error(`unexpected PATCH ${url}`))
+        })
+
+        renderWithProviders(<DashboardLayout />)
+        await waitFor(() => expect(screen.getByText('Jamie Rivera')).toBeInTheDocument())
+
+        const user = userEvent.setup()
+        await user.click(screen.getByRole('button', { name: /open settings/i }))
+
+        const checkbox = await screen.findByTestId('bill-reminders-toggle')
+        expect(checkbox).toBeChecked()
+
+        await user.click(checkbox)
+
+        await waitFor(() =>
+            expect(axiosInstance.patch).toHaveBeenCalledWith(
+                API_PATHS.NOTIFICATIONS.PREFERENCES,
+                { billRemindersEnabled: false }
+            )
+        )
+        await waitFor(() => expect(checkbox).not.toBeChecked())
+    })
+})
+
 describe('DashboardLayout sign-out (SEC-46)', () => {
     it('warns before discarding unsynced local changes on sign out', async () => {
         countUnsyncedChangesMock.mockResolvedValueOnce(3)
